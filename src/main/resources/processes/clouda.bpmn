@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/processdef">
+  <process id="clouda" name="clouda" isExecutable="true">
+    <startEvent id="开始节点" name="开始节点">
+      <extensionElements>
+        <activiti:formProperty id="method" name="method" type="string" expression="get" variable="get"></activiti:formProperty>
+        <activiti:formProperty id="url" name="url" type="string" expression="http://127.0.0.1:38081/test" variable="http://127.0.0.1:38081/test"></activiti:formProperty>
+      </extensionElements>
+    </startEvent>
+    <userTask id="用户申请" name="用户申请">
+      <extensionElements>
+        <activiti:formProperty id="timerDate" name="定时器执行时间 如果及时类型 传入空字符串" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="applyUserEmail" name="申请人email地址" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="url" name="云平台回调地址-生成url链接" type="string"></activiti:formProperty>
+        <activiti:formProperty id="method" name="云平台回调http方法-post或者get" type="string"></activiti:formProperty>
+        <activiti:formProperty id="applyType" name="申请类型" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="inTime" name="true为及时体验，false为预约" type="boolean" required="true"></activiti:formProperty>
+        <activiti:formProperty id="applyProject" name="申请项目" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="cooperateProject" name="合作项目名称" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="cooperateCompany" name="合作公司名称" type="string"></activiti:formProperty>
+        <activiti:formProperty id="applyStartDate" name="申请时间" type="string" required="true"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <userTask id="DCG审批" name="审批 " activiti:candidateUsers="dcgGroup,a,b,c">
+      <extensionElements>
+        <activiti:formProperty id="dcgApproval" name="dcgApproval" type="boolean" expression="dcg审批通过或者拒绝，true 或者 false" required="true"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <serviceTask id="生成url" name="调用51cloudapi " activiti:class="com.yawn.common.activiti.HttpCallRemoteFunction">
+      <extensionElements>
+        <activiti:field name="url">
+          <activiti:string><![CDATA[http://127.0.0.1:38081/test]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="method">
+          <activiti:string><![CDATA[get]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="resultKeys">
+          <activiti:string><![CDATA[resultUrl]]></activiti:string>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <serviceTask id="邮件通知申请人" name="邮件通知申请人" activiti:type="mail">
+      <extensionElements>
+        <activiti:field name="to">
+          <activiti:expression><![CDATA[${applyUserEmail}]]></activiti:expression>
+        </activiti:field>
+        <activiti:field name="from">
+          <activiti:string><![CDATA[18501692699@163.com]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="subject">
+          <activiti:string><![CDATA[通知申请人]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="cc">
+          <activiti:string><![CDATA[18501692699@163.com]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="html">
+          <activiti:expression><![CDATA[通知申请人html: ${resultUrl}]]></activiti:expression>
+        </activiti:field>
+        <activiti:field name="charset">
+          <activiti:string><![CDATA[UTF-8]]></activiti:string>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <endEvent id="结束节点" name="结束节点"></endEvent>
+    <sequenceFlow id="sid-3467EA4A-6D39-4747-A3CB-ECFA79EF8D2E" sourceRef="开始节点" targetRef="用户申请"></sequenceFlow>
+    <sequenceFlow id="sid-7DFEF58A-3C67-400E-987D-B03153384C44" sourceRef="邮件通知申请人" targetRef="结束节点"></sequenceFlow>
+    <intermediateCatchEvent id="定时器" name="定时器">
+      <timerEventDefinition>
+        <timeDate>${timerDate}</timeDate>
+      </timerEventDefinition>
+    </intermediateCatchEvent>
+    <sequenceFlow id="sid-50D0BB3E-A72F-41C3-9F5F-171AC68796F3" sourceRef="DCG审批" targetRef="结束节点">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${dcgApproval==false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-47AE4731-A1F4-432B-B9AA-76642AD1650A" sourceRef="生成url" targetRef="邮件通知申请人"></sequenceFlow>
+    <sequenceFlow id="sid-3A47E650-044F-47E1-BAEF-820E97D1C3D9" sourceRef="定时器" targetRef="生成url"></sequenceFlow>
+    <sequenceFlow id="sid-2BDE612E-2E31-4534-B405-5AF20F4955C5" sourceRef="DCG审批" targetRef="生成url"></sequenceFlow>
+    <sequenceFlow id="sid-5A39D7F5-A898-422A-9C94-AC962267FB89" sourceRef="DCG审批" targetRef="定时器">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${dcgApproval==true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-91847C8E-2E88-44CB-A993-31A1F1CF23E3" sourceRef="用户申请" targetRef="DCG审批"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_clouda">
+    <bpmndi:BPMNPlane bpmnElement="clouda" id="BPMNPlane_clouda">
+      <bpmndi:BPMNShape bpmnElement="开始节点" id="BPMNShape_开始节点">
+        <omgdc:Bounds height="30.0" width="30.0" x="60.0" y="235.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="用户申请" id="BPMNShape_用户申请">
+        <omgdc:Bounds height="80.0" width="100.0" x="195.0" y="210.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="DCG审批" id="BPMNShape_DCG审批">
+        <omgdc:Bounds height="80.0" width="100.0" x="420.0" y="540.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="生成url" id="BPMNShape_生成url">
+        <omgdc:Bounds height="80.0" width="100.0" x="720.0" y="185.5"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="邮件通知申请人" id="BPMNShape_邮件通知申请人">
+        <omgdc:Bounds height="80.0" width="100.0" x="1089.0" y="185.5"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="结束节点" id="BPMNShape_结束节点">
+        <omgdc:Bounds height="28.0" width="28.0" x="1125.0" y="405.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="定时器" id="BPMNShape_定时器">
+        <omgdc:Bounds height="31.0" width="31.0" x="454.5" y="210.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="sid-2BDE612E-2E31-4534-B405-5AF20F4955C5" id="BPMNEdge_sid-2BDE612E-2E31-4534-B405-5AF20F4955C5">
+        <omgdi:waypoint x="503.85049365303246" y="540.0"></omgdi:waypoint>
+        <omgdi:waypoint x="736.1495063469675" y="265.5"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-3467EA4A-6D39-4747-A3CB-ECFA79EF8D2E" id="BPMNEdge_sid-3467EA4A-6D39-4747-A3CB-ECFA79EF8D2E">
+        <omgdi:waypoint x="90.0" y="250.0"></omgdi:waypoint>
+        <omgdi:waypoint x="195.0" y="250.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-50D0BB3E-A72F-41C3-9F5F-171AC68796F3" id="BPMNEdge_sid-50D0BB3E-A72F-41C3-9F5F-171AC68796F3">
+        <omgdi:waypoint x="520.0" y="567.96711509716"></omgdi:waypoint>
+        <omgdi:waypoint x="1125.388611912974" y="422.2756853243814"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-47AE4731-A1F4-432B-B9AA-76642AD1650A" id="BPMNEdge_sid-47AE4731-A1F4-432B-B9AA-76642AD1650A">
+        <omgdi:waypoint x="820.0" y="225.5"></omgdi:waypoint>
+        <omgdi:waypoint x="1089.0" y="225.5"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-3A47E650-044F-47E1-BAEF-820E97D1C3D9" id="BPMNEdge_sid-3A47E650-044F-47E1-BAEF-820E97D1C3D9">
+        <omgdi:waypoint x="485.5" y="225.5"></omgdi:waypoint>
+        <omgdi:waypoint x="720.0" y="225.5"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-5A39D7F5-A898-422A-9C94-AC962267FB89" id="BPMNEdge_sid-5A39D7F5-A898-422A-9C94-AC962267FB89">
+        <omgdi:waypoint x="470.0" y="540.0"></omgdi:waypoint>
+        <omgdi:waypoint x="470.0" y="241.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-91847C8E-2E88-44CB-A993-31A1F1CF23E3" id="BPMNEdge_sid-91847C8E-2E88-44CB-A993-31A1F1CF23E3">
+        <omgdi:waypoint x="272.27272727272725" y="290.0"></omgdi:waypoint>
+        <omgdi:waypoint x="442.72727272727275" y="540.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-7DFEF58A-3C67-400E-987D-B03153384C44" id="BPMNEdge_sid-7DFEF58A-3C67-400E-987D-B03153384C44">
+        <omgdi:waypoint x="1139.0" y="265.5"></omgdi:waypoint>
+        <omgdi:waypoint x="1139.0" y="405.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
