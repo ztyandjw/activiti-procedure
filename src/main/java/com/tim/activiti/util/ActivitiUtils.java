@@ -26,10 +26,19 @@ public class ActivitiUtils {
     private static class SingleTonHoler{
         private static RepositoryService repositoryService = ProcessEngines.getDefaultProcessEngine().getRepositoryService();
     }
-    public static <T> T getFlowElement(String definitionKey, Class<T> clazz, String nodeId) {
-        ProcessDefinition processDefinition = SingleTonHoler.repositoryService
-                .createProcessDefinitionQuery()
-                .processDefinitionKey(definitionKey).orderByProcessDefinitionVersion().desc().list().get(0);
+    public static <T> T getFlowElement(String definitionKey, Class<T> clazz, String nodeId, int version) {
+        ProcessDefinition processDefinition = null;
+        if(version != -999) {
+            processDefinition = SingleTonHoler.repositoryService
+            .createProcessDefinitionQuery()
+            .processDefinitionKey(definitionKey).orderByProcessDefinitionVersion().desc().processDefinitionVersion(version).singleResult();
+        }
+        else {
+            processDefinition = SingleTonHoler.repositoryService
+                    .createProcessDefinitionQuery()
+                    .processDefinitionKey(definitionKey).orderByProcessDefinitionVersion().desc().latestVersion().singleResult();
+        }
+
         if(processDefinition == null) {
             throw new ActivitiServiceException(500, String.format("从流程名称: %s 获取流程定义失败,", definitionKey));
         }

@@ -1,7 +1,9 @@
 package com.tim.activiti.service;
 
 import com.google.common.collect.Lists;
-import com.tim.activiti.common.dto.FetchProceduresDTO;
+import com.sun.org.apache.xpath.internal.operations.Bool;
+import com.tim.activiti.common.dto.FetchAllProceduresDTO;
+import com.tim.activiti.common.dto.FetchProceduresByUserOrGroupDTO;
 import com.tim.activiti.util.ActivitiUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.UserTask;
@@ -45,7 +47,7 @@ public class ProcedureServiceImpl {
         return id;
     }
 
-    private HistoricProcessInstanceQuery getQuery(String definitionKey, String startUserId, String order, Boolean isFinished) {
+    private HistoricProcessInstanceQuery getQuery(String definitionKey, String startUserId, String order) {
         HistoricProcessInstanceQuery query = null;
         if(definitionKey != null && StringUtils.isNotBlank(definitionKey.trim())) {
             query = historyService.createHistoricProcessInstanceQuery().processDefinitionKey(definitionKey);
@@ -53,9 +55,7 @@ public class ProcedureServiceImpl {
         if(startUserId != null && StringUtils.isNotBlank(startUserId.trim())) {
             query.startedBy(startUserId);
         }
-        if(isFinished != null && isFinished== true) {
-            query.finished();
-        }
+
         if(StringUtils.isNotBlank(order)) {
             if(order.equals("asc")) {
                 query.orderByProcessInstanceStartTime().asc();
@@ -70,67 +70,65 @@ public class ProcedureServiceImpl {
         return query;
     }
 
-    public List<FetchProceduresDTO> fetchProceduresByUserOrGroup(String definitionKey, String startUserId, String order, String userid, String groupid, String taskName) {
-        List<FetchProceduresDTO> list = Lists.newArrayList();
+    public List<FetchAllProceduresDTO> fetchProceduresByUserOrGroup(String definitionKey, String startUserId, String order, String userid, String groupid, String taskName) {
+        List<FetchAllProceduresDTO> list = Lists.newArrayList();
         List<HistoricProcessInstance> historicProcessInstances = Lists.newArrayList();
-        historicProcessInstances = this.getQuery(definitionKey, startUserId, order, false).list();
+        historicProcessInstances = this.getQuery(definitionKey, startUserId, order).list();
         for(HistoricProcessInstance historicProcessInstance: historicProcessInstances) {
-            HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(historicProcessInstance.getId()).taskName(taskName).unfinished().singleResult();
-            if(historicProcessInstance == null) {
+            HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(historicProcessInstance.getId()).taskName(taskName).singleResult();
+            if(historicTaskInstance == null) {
                 continue;
+
             }
             else {
-                UserTask userTask = ActivitiUtils.getFlowElement(definitionKey, UserTask.class, taskName);
+                int version = historicProcessInstance.getProcessDefinitionVersion();
+                UserTask userTask = ActivitiUtils.getFlowElement(definitionKey, UserTask.class, taskName, version);
                 String assignee = userTask.getAssignee();
                 List<String> candidateGroups = userTask.getCandidateGroups();
                 List<String> candidateUsers = userTask.getCandidateUsers();
-                //说明activiti的任务中没有配置权限相关
-                if(assignee == null && candidateGroups.size() == 0 && candidateUsers.size() ==0) {
-                    List<HistoricVariableInstance> varInstanceList = historyService.createHistoricVariableInstanceQuery().processInstanceId(historicProcessInstance.getId()).list();
-                    FetchProceduresDTO procedureInstanceDTO = new FetchProceduresDTO();
-                    list.add(this.wrapFetchProceduresDTO(procedureInstanceDTO, varInstanceList, historicProcessInstance));
+                if(assignee != null && !userid.equals(assignee)) {
+                    continue;
                 }
-                if(StringUtils.isNotBlank(groupid) && candidateGroups.contains(groupid)) {
-                    List<HistoricVariableInstance> varInstanceList = historyService.createHistoricVariableInstanceQuery().processInstanceId(historicProcessInstance.getId()).list();
-                    FetchProceduresDTO procedureInstanceDTO = new FetchProceduresDTO();
-                    list.add(this.wrapFetchProceduresDTO(procedureInstanceDTO, varInstanceList, historicProcessInstance));
+                if((candidateUsers.size() > 0 && !candidateUsers.contains(userid)) && (candidateGroups.size() == 0 || (candidateGroups.size() > 0 && !candidateGroups.contains(groupid)))) {
+                    continue;
                 }
-                if(assignee.equals(userid)) {
-                    List<HistoricVariableInstance> varInstanceList = historyService.createHistoricVariableInstanceQuery().processInstanceId(historicProcessInstance.getId()).list();
-                    FetchProceduresDTO procedureInstanceDTO = new FetchProceduresDTO();
-                    list.add(this.wrapFetchProceduresDTO(procedureInstanceDTO, varInstanceList, historicProcessInstance));
+                if(candidateGroups.size() > 0 && !candidateGroups.contains(groupid)) {
+                    continue;
                 }
-                if(candidateUsers.contains(userid)) {
-                    List<HistoricVariableInstance> varInstanceList = historyService.createHistoricVariableInstanceQuery().processInstanceId(historicProcessInstance.getId()).list();
-                    FetchProceduresDTO procedureInstanceDTO = new FetchProceduresDTO();
-                    list.add(this.wrapFetchProceduresDTO(procedureInstanceDTO, varInstanceList, historicProcessInstance));
-                }
-                continue;
+                List<HistoricVariableInstance> varInstanceList = historyService.createHistoricVariableInstanceQuery().processInstanceId(historicProcessInstance.getId()).list();
+                FetchProceduresByUserOrGroupDTO fetchProceduresByUserOrGroupDTO = new FetchProceduresByUserOrGroupDTO();
+                fetchProceduresByUserOrGroupDTO = (FetchProceduresByUserOrGroupDTO) this.wrapFetchProceduresDTO(fetchProceduresByUserOrGroupDTO, varInstanceList, historicProcessInstance);
+                fetchProceduresByUserOrGroupDTO.setTaskAssignee(historicTaskInstance.getAssignee());
+                fetchProceduresByUserOrGroupDTO.setTaskName(taskName);
+                list.add(fetchProceduresByUserOrGroupDTO);
             }
         }
         return  list;
     }
 
-    private FetchProceduresDTO wrapFetchProceduresDTO(FetchProceduresDTO oldVar, List<HistoricVariableInstance> varInstanceList, HistoricProcessInstance historicProcessInstance) {
+
+
+    private FetchAllProceduresDTO wrapFetchProceduresDTO(FetchAllProceduresDTO oldVar, List<HistoricVariableInstance> varInstanceList, HistoricProcessInstance historicProcessInstance) {
         oldVar.setStartTime(historicProcessInstance.getStartTime());
         oldVar.setEndTime(historicProcessInstance.getEndTime());
         oldVar.setDeleteReason(historicProcessInstance.getDeleteReason());
         oldVar.setProcedureInstanceId(historicProcessInstance.getId());
-        oldVar.setStartUserId(historicProcessInstance.getStartUserId());
+        oldVar.setProcedureStartUserId(historicProcessInstance.getStartUserId());
         if(varInstanceList.size() > 0) {
             Map<String, Object> vars = varInstanceList.stream().collect(Collectors.toMap(HistoricVariableInstance:: getVariableName, HistoricVariableInstance:: getValue, (v1, v2) -> v2));
             oldVar.setVars(vars);
         }
+        oldVar.setProcedureDefinitionKey(historicProcessInstance.getProcessDefinitionKey());
         return oldVar;
     }
 
-    public List<FetchProceduresDTO> fetchAllProcedures(String definitionKey, String startUserId, String order, Boolean procedureFinished) {
-        List<FetchProceduresDTO> list = Lists.newArrayList();
+    public List<FetchAllProceduresDTO> fetchAllProcedures(String definitionKey, String startUserId, String order) {
+        List<FetchAllProceduresDTO> list = Lists.newArrayList();
         List<HistoricProcessInstance> historicProcessInstances = Lists.newArrayList();
-        historicProcessInstances = this.getQuery(definitionKey, startUserId, order, procedureFinished).list();
+        historicProcessInstances = this.getQuery(definitionKey, startUserId, order).list();
         for(HistoricProcessInstance historicProcessInstance: historicProcessInstances) {
             List<HistoricVariableInstance> varInstanceList = historyService.createHistoricVariableInstanceQuery().processInstanceId(historicProcessInstance.getId()).list();
-            FetchProceduresDTO procedureInstanceDTO = new FetchProceduresDTO();
+            FetchAllProceduresDTO procedureInstanceDTO = new FetchAllProceduresDTO();
             list.add(this.wrapFetchProceduresDTO(procedureInstanceDTO, varInstanceList, historicProcessInstance));
         }
         return list;

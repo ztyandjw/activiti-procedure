@@ -1,6 +1,6 @@
 package com.tim.activiti.common.vo;
 
-import com.tim.activiti.common.dto.FetchProceduresDTO;
+import com.tim.activiti.common.dto.FetchAllProceduresDTO;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -21,5 +21,5 @@ public class FetchProceduresVO implements Serializable {
 
     private Integer num;
 
-    private List<FetchProceduresDTO> list;
+    private List<FetchAllProceduresDTO> list;
 }

@@ -20,8 +20,8 @@ public class FetchProceduresBO implements Serializable{
     @ApiModelProperty(value = "是谁启动该流程", required = false, example = "zhangtianyi")
     private String startUserId;
 
-    @ApiModelProperty(value = "流程是否结束", required = false, example = "zhangtianyi")
-    private Boolean procedureFinished;
+//    @ApiModelProperty(value = "流程是否结束", required = false, example = "zhangtianyi")
+//    private Boolean procedureFinished;
 
     @ApiModelProperty(value = "根据流程发起时间排序", required = false, example = "desc|asc")
     @Pattern(regexp = "desc|asc", message = "order字段必须为desc或者sac")

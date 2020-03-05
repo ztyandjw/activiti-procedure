@@ -43,14 +43,13 @@ public class TestActiviti {
             List<HistoricTaskInstance> historicTaskInstances = historyService.createHistoricTaskInstanceQuery().processInstanceId(historicProcessInstance.getId()).taskName("审批").list();
 
             if(historicTaskInstances.size() > 0) {
-                UserTask userTask = ActivitiUtils.getFlowElement("clouda", UserTask.class, "审批");
+                UserTask userTask = ActivitiUtils.getFlowElement("clouda", UserTask.class, "审批", -999);
                 List<String> groups = userTask.getCandidateGroups();
                 List<String> ids = userTask.getCandidateUsers();
                 String assign = userTask.getAssignee();
                 System.out.println(groups);
                 System.out.println(ids);
                 System.out.println(assign);
-
             }
 
         }

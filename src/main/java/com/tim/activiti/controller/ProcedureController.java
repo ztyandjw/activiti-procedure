@@ -3,14 +3,12 @@ package com.tim.activiti.controller;
 import com.tim.activiti.common.bo.FetchProceduresBO;
 import com.tim.activiti.common.bo.FetchProceduresByUserOrGroupBO;
 import com.tim.activiti.common.bo.StartProcedureBO;
-import com.tim.activiti.common.dto.FetchProceduresDTO;
+import com.tim.activiti.common.dto.FetchAllProceduresDTO;
 import com.tim.activiti.common.vo.CommonResult;
 import com.tim.activiti.common.vo.FetchProceduresVO;
-import com.tim.activiti.exception.ActivitiServiceException;
 import com.tim.activiti.service.ProcedureServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -45,14 +43,13 @@ public class ProcedureController {
         String definitionKey = fetchProceduresBO.getDefinitionKey();
         String startUserId = fetchProceduresBO.getStartUserId();
         String order = fetchProceduresBO.getOrder();
-        Boolean procedureFinished = fetchProceduresBO.getProcedureFinished();
 //        String  candidateOrAssigneeUserId = fetchProceduresBO.getCandidateOrAssigneeUserId();
 //        if(StringUtils.isNotBlank(taskName)) {
 //            if(StringUtils.isBlank(groupId) || StringUtils.isBlank(candidateOrAssigneeUserId)) {
 //                throw new ActivitiServiceException(400, "taskName赋值的情况下，candidateOrAssigneeUserId与groupId必须有一个被赋值了");
 //            }
 //        }
-        List<FetchProceduresDTO> list = procedureService.fetchAllProcedures(definitionKey, startUserId, order, procedureFinished);
+        List<FetchAllProceduresDTO> list = procedureService.fetchAllProcedures(definitionKey, startUserId, order);
         FetchProceduresVO fetchProceduresVO = new FetchProceduresVO();
         fetchProceduresVO.setList(list);
         fetchProceduresVO.setNum(list.size());
@@ -68,9 +65,7 @@ public class ProcedureController {
         String  candidateOrAssigneeUserId = fetchProceduresByUserOrGroupBO.getCandidateOrAssigneeUserId();
         String taskName = fetchProceduresByUserOrGroupBO.getTaskName();
         String candidateGroupId = fetchProceduresByUserOrGroupBO.getCandidateGroupId();
-
-
-        List<FetchProceduresDTO> list = procedureService.fetchAllProcedures(definitionKey, startUserId, order, procedureFinished);
+        List<FetchAllProceduresDTO> list = procedureService.fetchProceduresByUserOrGroup(definitionKey, startUserId, order, candidateOrAssigneeUserId, candidateGroupId, taskName);
         FetchProceduresVO fetchProceduresVO = new FetchProceduresVO();
         fetchProceduresVO.setList(list);
         fetchProceduresVO.setNum(list.size());

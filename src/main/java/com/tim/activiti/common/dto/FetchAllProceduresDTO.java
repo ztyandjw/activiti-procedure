@@ -15,7 +15,7 @@ import java.util.Map;
 @ApiModel("历史流程DTO")
 @Data
 @Accessors(chain = true)
-public class FetchProceduresDTO implements Serializable {
+public class FetchAllProceduresDTO implements Serializable {
 
     private static final long serialVersionUID = -7458481085413154476L;
 
@@ -32,6 +32,6 @@ public class FetchProceduresDTO implements Serializable {
     @ApiModelProperty("流程定义名称")
     private String procedureDefinitionKey;
     @ApiModelProperty("启动流程用户id")
-    private String startUserId;
+    private String procedureStartUserId;
 
 }

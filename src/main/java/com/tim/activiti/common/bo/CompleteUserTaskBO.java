@@ -35,7 +35,6 @@ public class CompleteUserTaskBO implements Serializable {
     private String applyUserId;
 
     @ApiModelProperty(value = "申请人组id", required = true, example = "admin")
-    @NotBlank(message = "applyUserGroupId不能为blank,后期通过token传值")
     private String applyUserGroupId;
 
 }

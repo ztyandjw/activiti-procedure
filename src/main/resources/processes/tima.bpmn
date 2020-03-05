@@ -21,17 +21,15 @@
         <activiti:formProperty id="applyStartDate" name="申请时间" type="string" required="true"></activiti:formProperty>
       </extensionElements>
     </userTask>
-    <userTask id="审批" name="审批 " activiti:candidateUsers="dcgGroup,a,b,c">
+    <userTask id="审批" name="审批 " activiti:candidateGroups="testG">
       <extensionElements>
         <activiti:formProperty id="dcgApproval" name="dcgApproval" type="boolean" expression="dcg审批通过或者拒绝，true 或者 false" required="true"></activiti:formProperty>
       </extensionElements>
     </userTask>
     <endEvent id="结束节点" name="结束节点"></endEvent>
     <sequenceFlow id="sid-3467EA4A-6D39-4747-A3CB-ECFA79EF8D2E" sourceRef="开始节点" targetRef="用户申请"></sequenceFlow>
-    <sequenceFlow id="sid-50D0BB3E-A72F-41C3-9F5F-171AC68796F3" sourceRef="审批" targetRef="结束节点">
-      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${dcgApproval==false}]]></conditionExpression>
-    </sequenceFlow>
     <sequenceFlow id="sid-91847C8E-2E88-44CB-A993-31A1F1CF23E3" sourceRef="用户申请" targetRef="审批"></sequenceFlow>
+    <sequenceFlow id="sid-50D0BB3E-A72F-41C3-9F5F-171AC68796F3" sourceRef="审批" targetRef="结束节点"></sequenceFlow>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_tima">
     <bpmndi:BPMNPlane bpmnElement="tima" id="BPMNPlane_tima">

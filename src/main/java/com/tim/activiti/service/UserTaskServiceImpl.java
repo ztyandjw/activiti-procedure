@@ -45,9 +45,10 @@ public class UserTaskServiceImpl {
 
     public void completeUserTask(String userId, String groupId, Map<String, Object> inputParams, String taskName, String procedureId) {
         Task task = this.checkProcedureIdAndTaskName(procedureId, taskName);
+        String taskId = task.getId();
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(procedureId).singleResult();
         String procedureDefinitionKey = processInstance.getProcessDefinitionKey();
-        UserTask userTask = ActivitiUtils.getFlowElement(procedureDefinitionKey, UserTask.class, "");
+        UserTask userTask = ActivitiUtils.getFlowElement(procedureDefinitionKey, UserTask.class, "", -999);
         if(userTask == null) {
             throw new ActivitiServiceException(500, "服务器内部错误");
         }
@@ -58,6 +59,7 @@ public class UserTaskServiceImpl {
                 throw new ActivitiServiceException(401, String.format("用户id : %s不正确, 必须与流程发起用户: %s 保持一致", userId, procedureUserId));
             }
         }
+        userTask = ActivitiUtils.getFlowElement(procedureDefinitionKey, UserTask.class, taskName, -999);
         List<FormProperty> formPropertyList = userTask.getFormProperties();
         Set<String> requiredKeys = formPropertyList.stream().filter(property -> property.isRequired() == true).map(FormProperty :: getId).collect(Collectors.toSet());
         if(requiredKeys.size() > 0) {
@@ -77,10 +79,12 @@ public class UserTaskServiceImpl {
         if(candidateUsers.size() == 0 && candidateGroups.size() == 0) {
             if(userTask.getAssignee() == null || userId.equals(userTask.getAssignee())) {
                 if(inputParams != null) {
-                    taskService.complete(task.getId(), inputParams);
+//                    taskService.setAssignee(taskId, userId);
+                    taskService.complete(taskId, inputParams);
                 }
                 else {
-                    taskService.complete(task.getId());
+//                    taskService.setAssignee(taskId, userId);
+                    taskService.complete(taskId);
                 }
             }
             else {
@@ -89,13 +93,15 @@ public class UserTaskServiceImpl {
             }
         }
         else {
-            if(candidateUsers.contains(userId) || candidateGroups.contains(groupId)) {
+            if(candidateUsers.contains(userId) || (StringUtils.isNotBlank(groupId) && candidateGroups.contains(groupId))) {
                 taskService.claim(task.getId(), userId);
                 if(inputParams != null) {
-                    taskService.complete(task.getId(), inputParams);
+//                    taskService.setAssignee(taskId, userId);
+                    taskService.complete(taskId, inputParams);
                 }
                 else {
-                    taskService.complete(task.getId());
+//                    taskService.setAssignee(taskId, userId);
+                    taskService.complete(taskId);
                 }
             }
             else {
