@@ -1,6 +1,7 @@
 package com.tim.activiti.service;
 
 import com.google.common.collect.Sets;
+import com.tim.activiti.common.vo.TaskInfoVO;
 import com.tim.activiti.exception.ActivitiServiceException;
 import com.tim.activiti.util.ActivitiUtils;
 import org.activiti.bpmn.model.FormProperty;
@@ -13,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +33,30 @@ public class UserTaskServiceImpl {
     @Autowired
     private RuntimeService runtimeService;
 
+
+    public TaskInfoVO fetchTaskInfo(String definitionKey, String taskName) {
+
+        UserTask userTask = ActivitiUtils.getFlowElement(definitionKey, UserTask.class, taskName, -999);
+
+        TaskInfoVO taskInfoVO = new TaskInfoVO();
+        taskInfoVO.wrapFormProperties(userTask.getFormProperties());
+        List<String> candidateUsers = userTask.getCandidateUsers();
+        List<String> candidateGroups = userTask.getCandidateGroups();
+        String assignee = userTask.getAssignee();
+        List<String> authUsers = new ArrayList<>();
+        if(StringUtils.isNotBlank(assignee)) {
+            List<String> users = new ArrayList<>();
+            users.add(assignee);
+            taskInfoVO.setAuthUsers(users);
+            taskInfoVO.setAuthUsers(authUsers);
+            return taskInfoVO;
+        }
+        taskInfoVO.setAuthUsers(candidateUsers);
+        taskInfoVO.setAuthGroups(candidateGroups);
+        taskInfoVO.setProcedureDefinitionKey(definitionKey);
+        taskInfoVO.setTaskName(taskName);
+        return taskInfoVO;
+    }
 
     private  Task checkProcedureIdAndTaskName(String procedureId, String taskName) {
         Task task = taskService.createTaskQuery().processInstanceId(procedureId).singleResult();
@@ -61,6 +87,7 @@ public class UserTaskServiceImpl {
         }
         userTask = ActivitiUtils.getFlowElement(procedureDefinitionKey, UserTask.class, taskName, -999);
         List<FormProperty> formPropertyList = userTask.getFormProperties();
+        Set<String> allKeys = formPropertyList.stream().map(FormProperty :: getId).collect(Collectors.toSet());
         Set<String> requiredKeys = formPropertyList.stream().filter(property -> property.isRequired() == true).map(FormProperty :: getId).collect(Collectors.toSet());
         if(requiredKeys.size() > 0) {
             if(inputParams == null) {
@@ -72,6 +99,11 @@ public class UserTaskServiceImpl {
             if(diff.size() > 0) {
                 throw new ActivitiServiceException(400, "inputParams缺失关键字段, 缺失字段为: " + StringUtils.join(diff, ","));
             }
+            diff = Sets.difference(inputKeys, allKeys);
+            if(diff.size() > 0) {
+                throw new ActivitiServiceException(400, ("inputParams多出字段, 字段为:" +  StringUtils.join(diff, ",")));
+            }
+
         }
         List<String> candidateUsers = userTask.getCandidateUsers();
         List<String> candidateGroups = userTask.getCandidateGroups();

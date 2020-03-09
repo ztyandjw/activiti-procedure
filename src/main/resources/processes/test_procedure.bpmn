@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/processdef">
-  <process id="tima" name="tima" isExecutable="true">
+  <process id="test_procedure" name="test_procedure" isExecutable="true">
     <startEvent id="开始节点" name="开始节点">
       <extensionElements>
         <activiti:formProperty id="method" name="method" type="string" expression="get" variable="get"></activiti:formProperty>
@@ -9,7 +9,7 @@
     </startEvent>
     <userTask id="用户申请" name="用户申请">
       <extensionElements>
-        <activiti:formProperty id="timerDate" name="定时器执行时间 如果及时类型 传入空字符串" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="timerDate" name="定时器执行时间 如果及时类型 传入空字符串" type="string" expression="aaa" variable="bbb" required="true"></activiti:formProperty>
         <activiti:formProperty id="applyUserEmail" name="申请人email地址" type="string" required="true"></activiti:formProperty>
         <activiti:formProperty id="url" name="云平台回调地址-生成url链接" type="string"></activiti:formProperty>
         <activiti:formProperty id="method" name="云平台回调http方法-post或者get" type="string"></activiti:formProperty>
@@ -31,13 +31,13 @@
     <sequenceFlow id="sid-91847C8E-2E88-44CB-A993-31A1F1CF23E3" sourceRef="用户申请" targetRef="审批"></sequenceFlow>
     <sequenceFlow id="sid-50D0BB3E-A72F-41C3-9F5F-171AC68796F3" sourceRef="审批" targetRef="结束节点"></sequenceFlow>
   </process>
-  <bpmndi:BPMNDiagram id="BPMNDiagram_tima">
-    <bpmndi:BPMNPlane bpmnElement="tima" id="BPMNPlane_tima">
+  <bpmndi:BPMNDiagram id="BPMNDiagram_test_procedure">
+    <bpmndi:BPMNPlane bpmnElement="test_procedure" id="BPMNPlane_test_procedure">
       <bpmndi:BPMNShape bpmnElement="开始节点" id="BPMNShape_开始节点">
         <omgdc:Bounds height="30.0" width="30.0" x="60.0" y="235.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="用户申请" id="BPMNShape_用户申请">
-        <omgdc:Bounds height="80.0" width="100.0" x="195.0" y="210.0"></omgdc:Bounds>
+        <omgdc:Bounds height="80.0" width="100.0" x="195.0" y="195.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="审批" id="BPMNShape_审批">
         <omgdc:Bounds height="80.0" width="100.0" x="465.0" y="210.0"></omgdc:Bounds>
@@ -47,14 +47,18 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="sid-3467EA4A-6D39-4747-A3CB-ECFA79EF8D2E" id="BPMNEdge_sid-3467EA4A-6D39-4747-A3CB-ECFA79EF8D2E">
         <omgdi:waypoint x="90.0" y="250.0"></omgdi:waypoint>
-        <omgdi:waypoint x="195.0" y="250.0"></omgdi:waypoint>
+        <omgdi:waypoint x="142.5" y="250.0"></omgdi:waypoint>
+        <omgdi:waypoint x="142.5" y="235.0"></omgdi:waypoint>
+        <omgdi:waypoint x="195.0" y="235.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-50D0BB3E-A72F-41C3-9F5F-171AC68796F3" id="BPMNEdge_sid-50D0BB3E-A72F-41C3-9F5F-171AC68796F3">
         <omgdi:waypoint x="565.0" y="263.5416666666667"></omgdi:waypoint>
         <omgdi:waypoint x="1125.4868307931208" y="415.34018333980356"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-91847C8E-2E88-44CB-A993-31A1F1CF23E3" id="BPMNEdge_sid-91847C8E-2E88-44CB-A993-31A1F1CF23E3">
-        <omgdi:waypoint x="295.0" y="250.0"></omgdi:waypoint>
+        <omgdi:waypoint x="295.0" y="235.0"></omgdi:waypoint>
+        <omgdi:waypoint x="380.0" y="235.0"></omgdi:waypoint>
+        <omgdi:waypoint x="380.0" y="250.0"></omgdi:waypoint>
         <omgdi:waypoint x="465.0" y="250.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>

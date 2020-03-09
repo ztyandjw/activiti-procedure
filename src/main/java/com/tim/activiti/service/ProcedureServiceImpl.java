@@ -97,7 +97,7 @@ public class ProcedureServiceImpl {
                 }
                 List<HistoricVariableInstance> varInstanceList = historyService.createHistoricVariableInstanceQuery().processInstanceId(historicProcessInstance.getId()).list();
                 FetchProceduresByUserOrGroupDTO fetchProceduresByUserOrGroupDTO = new FetchProceduresByUserOrGroupDTO();
-                fetchProceduresByUserOrGroupDTO = (FetchProceduresByUserOrGroupDTO) this.wrapFetchProceduresDTO(fetchProceduresByUserOrGroupDTO, varInstanceList, historicProcessInstance);
+                this.wrapFetchProceduresDTO(fetchProceduresByUserOrGroupDTO, varInstanceList, historicProcessInstance);
                 fetchProceduresByUserOrGroupDTO.setTaskAssignee(historicTaskInstance.getAssignee());
                 fetchProceduresByUserOrGroupDTO.setTaskName(taskName);
                 list.add(fetchProceduresByUserOrGroupDTO);
@@ -108,7 +108,7 @@ public class ProcedureServiceImpl {
 
 
 
-    private FetchAllProceduresDTO wrapFetchProceduresDTO(FetchAllProceduresDTO oldVar, List<HistoricVariableInstance> varInstanceList, HistoricProcessInstance historicProcessInstance) {
+    private void wrapFetchProceduresDTO(FetchAllProceduresDTO oldVar, List<HistoricVariableInstance> varInstanceList, HistoricProcessInstance historicProcessInstance) {
         oldVar.setStartTime(historicProcessInstance.getStartTime());
         oldVar.setEndTime(historicProcessInstance.getEndTime());
         oldVar.setDeleteReason(historicProcessInstance.getDeleteReason());
@@ -119,7 +119,6 @@ public class ProcedureServiceImpl {
             oldVar.setVars(vars);
         }
         oldVar.setProcedureDefinitionKey(historicProcessInstance.getProcessDefinitionKey());
-        return oldVar;
     }
 
     public List<FetchAllProceduresDTO> fetchAllProcedures(String definitionKey, String startUserId, String order) {
@@ -129,8 +128,12 @@ public class ProcedureServiceImpl {
         for(HistoricProcessInstance historicProcessInstance: historicProcessInstances) {
             List<HistoricVariableInstance> varInstanceList = historyService.createHistoricVariableInstanceQuery().processInstanceId(historicProcessInstance.getId()).list();
             FetchAllProceduresDTO procedureInstanceDTO = new FetchAllProceduresDTO();
-            list.add(this.wrapFetchProceduresDTO(procedureInstanceDTO, varInstanceList, historicProcessInstance));
+            this.wrapFetchProceduresDTO(procedureInstanceDTO, varInstanceList, historicProcessInstance);
+            list.add(procedureInstanceDTO);
         }
         return list;
     }
+
+
+
 }

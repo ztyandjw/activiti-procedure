@@ -33,6 +33,7 @@ public class ActivitiUtils {
             .createProcessDefinitionQuery()
             .processDefinitionKey(definitionKey).orderByProcessDefinitionVersion().desc().processDefinitionVersion(version).singleResult();
         }
+        //-999 说明是latest
         else {
             processDefinition = SingleTonHoler.repositoryService
                     .createProcessDefinitionQuery()
