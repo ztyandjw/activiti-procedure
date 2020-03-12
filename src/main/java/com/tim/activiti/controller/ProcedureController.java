@@ -37,18 +37,22 @@ public class ProcedureController {
     }
 
 
+    @PostMapping("/runtime/updateInputParams")
+    @ApiOperation(value = "启动流程实例")
+    public CommonResult<String> updateInputParams(@RequestBody @Validated StartProcedureBO startProcedureBO) {
+        //启动id
+        String processDefinitionKey =startProcedureBO.getDefinitionKey();
+        String userId = startProcedureBO.getApplyUserId();
+        return CommonResult.success(procedureService.startProcedure(userId, processDefinitionKey));
+    }
+
+
     @GetMapping("/historic/fetchAll")
     @ApiOperation(value = "获取流程实例集合")
     public CommonResult<FetchProceduresVO> fetchAllProcedures(@Validated FetchProceduresBO fetchProceduresBO) {
         String definitionKey = fetchProceduresBO.getDefinitionKey();
         String startUserId = fetchProceduresBO.getStartUserId();
         String order = fetchProceduresBO.getOrder();
-//        String  candidateOrAssigneeUserId = fetchProceduresBO.getCandidateOrAssigneeUserId();
-//        if(StringUtils.isNotBlank(taskName)) {
-//            if(StringUtils.isBlank(groupId) || StringUtils.isBlank(candidateOrAssigneeUserId)) {
-//                throw new ActivitiServiceException(400, "taskName赋值的情况下，candidateOrAssigneeUserId与groupId必须有一个被赋值了");
-//            }
-//        }
         List<FetchAllProceduresDTO> list = procedureService.fetchAllProcedures(definitionKey, startUserId, order);
         FetchProceduresVO fetchProceduresVO = new FetchProceduresVO();
         fetchProceduresVO.setList(list);
