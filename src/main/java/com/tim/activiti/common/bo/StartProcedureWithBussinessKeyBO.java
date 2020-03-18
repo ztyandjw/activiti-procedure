@@ -16,13 +16,17 @@ import java.io.Serializable;
 @ApiModel("入参(启动流程Bussiness Object)")
 @Data
 @Accessors(chain = true)
-public class StartProcedureBO implements Serializable{
+public class StartProcedureWithBussinessKeyBO implements Serializable{
 
-    private static final long serialVersionUID = 3664720941493905912L;
 
+    private static final long serialVersionUID = 7552909133741324423L;
     @ApiModelProperty(value = "流程名称", required = true, example = "请假流程")
     @NotBlank(message = "definitionKey流程定义名称不能为blank")
     private String definitionKey;
+
+    @ApiModelProperty(value = "业务id", required = true, example = "请假流程")
+    @NotBlank(message = "bussinessKey业务id名称不能为blank")
+    private String bussinessKey;
 
 
 //    private Map<String, Object> inputParams;

@@ -3,6 +3,7 @@ package com.tim.activiti.controller;
 import com.tim.activiti.common.bo.FetchProceduresBO;
 import com.tim.activiti.common.bo.FetchProceduresByUserOrGroupBO;
 import com.tim.activiti.common.bo.StartProcedureBO;
+import com.tim.activiti.common.bo.StartProcedureWithBussinessKeyBO;
 import com.tim.activiti.common.dto.FetchAllProceduresDTO;
 import com.tim.activiti.common.vo.CommonResult;
 import com.tim.activiti.common.vo.FetchProceduresVO;
@@ -32,19 +33,30 @@ public class ProcedureController {
     public CommonResult<String> startProcedure(@RequestBody @Validated StartProcedureBO startProcedureBO) {
         //启动id
         String processDefinitionKey =startProcedureBO.getDefinitionKey();
-        String userId = startProcedureBO.getApplyUserId();
-        return CommonResult.success(procedureService.startProcedure(userId, processDefinitionKey));
+        String userId = startProcedureBO.getUserId();
+        return CommonResult.success(procedureService.startProcedure(userId, processDefinitionKey, null));
     }
 
-
-    @PostMapping("/runtime/updateInputParams")
-    @ApiOperation(value = "启动流程实例")
-    public CommonResult<String> updateInputParams(@RequestBody @Validated StartProcedureBO startProcedureBO) {
+    @PostMapping("/runtime/startWithBussinessKey")
+    @ApiOperation(value = "启动流程实例带上业务id")
+    public CommonResult<String> startProcedureWithBussinessKey(@RequestBody @Validated StartProcedureWithBussinessKeyBO startProcedureWithBussinessKeyBO) {
         //启动id
-        String processDefinitionKey =startProcedureBO.getDefinitionKey();
-        String userId = startProcedureBO.getApplyUserId();
-        return CommonResult.success(procedureService.startProcedure(userId, processDefinitionKey));
+        String processDefinitionKey =startProcedureWithBussinessKeyBO.getDefinitionKey();
+        String userId = startProcedureWithBussinessKeyBO.getUserId();
+        String bussinessKey = startProcedureWithBussinessKeyBO.getBussinessKey();
+        return CommonResult.success(procedureService.startProcedure(userId, processDefinitionKey, bussinessKey));
     }
+
+
+//    @PostMapping("/runtime/updateInputParams")
+//    @ApiOperation(value = "启动流程实例")
+//    public CommonResult<String> updateInputParams(@RequestBody @Validated StartProcedureBO startProcedureBO) {
+//        //启动id
+//        String processDefinitionKey =startProcedureBO.getDefinitionKey();
+//        String userId = startProcedureBO.getUserId();
+//        String bussinessKey = startProcedureBO.getBussinessKey();
+//        return CommonResult.success(procedureService.startProcedure(userId, processDefinitionKey, bussinessKey));
+//    }
 
 
     @GetMapping("/historic/fetchAll")

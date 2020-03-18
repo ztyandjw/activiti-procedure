@@ -1,7 +1,7 @@
 package com.tim.activiti.controller;
 
 import com.tim.activiti.common.bo.CompleteUserTaskBO;
-import com.tim.activiti.common.bo.FetchProceduresByUserOrGroupBO;
+import com.tim.activiti.common.bo.CompleteUserTaskWithBussinessKeyBO;
 import com.tim.activiti.common.bo.FetchTaskInfo;
 import com.tim.activiti.common.vo.CommonResult;
 import com.tim.activiti.common.vo.TaskInfoVO;
@@ -30,12 +30,26 @@ public class TaskController {
     @PostMapping("runtime/completeTask")
     @ApiOperation(value = "执行流程任务")
     public CommonResult<Void> completeCurrentUserTask(@RequestBody @Validated CompleteUserTaskBO completeUserTaskBO) {
-        String procedureInstanceId = completeUserTaskBO.getProcedureInstanceId();
+        String procedureInstanceId = completeUserTaskBO.getProcedureDefinitionKey();
         String taskName = completeUserTaskBO.getTaskName();
         final Map<String, Object> inputParams = completeUserTaskBO.getInputParams();
-        String userid = completeUserTaskBO.getApplyUserId();
-        String groupid = completeUserTaskBO.getApplyUserGroupId();
+        String userid = completeUserTaskBO.getUserId();
+        String groupid = completeUserTaskBO.getGroupId();
         userTaskService.completeUserTask(userid, groupid,  inputParams, taskName, procedureInstanceId);
+        return CommonResult.success(null);
+    }
+
+
+    @PostMapping("runtime/completeTaskWithBussinessKey")
+    @ApiOperation(value = "执行流程任务")
+    public CommonResult<Void> completeCurrentUserTaskWithBussinessKey(@RequestBody @Validated CompleteUserTaskWithBussinessKeyBO bo) {
+        String definitionKey = bo.getDefinitionKey();
+        String bussinessKey = bo.getBussinessKey();
+        String taskName = bo.getTaskName();
+        final Map<String, Object> inputParams = bo.getInputParams();
+        String userId = bo.getUserId();
+        String groupId = bo.getGroupId();
+        userTaskService.completeUserTaskWithBussinessKey(definitionKey, bussinessKey, inputParams, taskName,  userId, groupId);
         return CommonResult.success(null);
     }
 

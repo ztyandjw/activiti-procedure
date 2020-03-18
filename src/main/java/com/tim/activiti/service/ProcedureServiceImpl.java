@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.tim.activiti.common.dto.FetchAllProceduresDTO;
 import com.tim.activiti.common.dto.FetchProceduresByUserOrGroupDTO;
+import com.tim.activiti.exception.ActivitiServiceException;
 import com.tim.activiti.util.ActivitiUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.UserTask;
@@ -17,6 +18,7 @@ import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,14 +38,28 @@ public class ProcedureServiceImpl {
     @Autowired
     private HistoryService historyService;
 
+
+
     //启动流程实例
-    public String startProcedure(String userId, String definitionKey) {
+    public String startProcedure(String userId, String definitionKey, String bussinessKey) {
 //        identityService.setAuthenticatedUserId(userId);
         //设置startUserId
         Authentication.setAuthenticatedUserId(userId);
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(definitionKey);
-        String id = processInstance.getId();
-        log.info("用户id: {} ,发起流程: {}, 流程编号: {}", userId, definitionKey, id);
+        String id;
+        ProcessInstance processInstance;
+        if(StringUtils.isNotBlank(bussinessKey)) {
+            if(historyService.createHistoricProcessInstanceQuery().processDefinitionKey(definitionKey).processInstanceBusinessKey(bussinessKey).list().size() > 0) {
+                throw new ActivitiServiceException(400, "definitionKey: " + definitionKey + " bussinessKey: " + bussinessKey + " 已经存在了");
+            }
+            processInstance = runtimeService.startProcessInstanceByKey(definitionKey, bussinessKey);
+            id = processInstance.getId();
+            log.info("用户id: {} ,发起流程: {}, 流程编号: {}, 业务id: {}", userId, definitionKey, id, bussinessKey);
+        }
+        else {
+            processInstance = runtimeService.startProcessInstanceByKey(definitionKey);
+            id = processInstance.getId();
+            log.info("用户id: {} ,发起流程: {}, 流程编号: {}", userId, definitionKey, id);
+        }
         return id;
     }
 
