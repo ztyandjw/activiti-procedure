@@ -50,7 +50,7 @@ public class GlobalExceptionHandler {
     public Object handlerException(Exception e) {
 
         logger.error("【全局异常拦截】: 未捕获异常: 异常信息 {} ", e.getMessage());
-//        logger.error("【错误堆栈信息】:", e);
+        logger.error("【错误堆栈信息】:", e);
         return CommonResult.error(500, e.getMessage());
     }
 }

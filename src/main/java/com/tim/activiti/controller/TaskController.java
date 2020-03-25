@@ -6,6 +6,7 @@ import com.tim.activiti.common.bo.FetchTaskInfo;
 import com.tim.activiti.common.vo.CommonResult;
 import com.tim.activiti.common.vo.TaskInfoVO;
 import com.tim.activiti.service.UserTaskServiceImpl;
+import com.tim.activiti.util.JwtTokenHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,18 +25,22 @@ import java.util.Map;
 @RestController
 public class TaskController {
 
+
+    @Autowired
+    private JwtTokenHelper jwtTokenHelper;
     @Autowired
     private UserTaskServiceImpl userTaskService;
 
     @PostMapping("runtime/completeTask")
     @ApiOperation(value = "执行流程任务")
     public CommonResult<Void> completeCurrentUserTask(@RequestBody @Validated CompleteUserTaskBO completeUserTaskBO) {
-        String procedureInstanceId = completeUserTaskBO.getProcedureDefinitionKey();
+        String procedureId = completeUserTaskBO.getProcedureId();
         String taskName = completeUserTaskBO.getTaskName();
+        String definitionKey = completeUserTaskBO.getDefinitionKey();
         final Map<String, Object> inputParams = completeUserTaskBO.getInputParams();
         String userid = completeUserTaskBO.getUserId();
         String groupid = completeUserTaskBO.getGroupId();
-        userTaskService.completeUserTask(userid, groupid,  inputParams, taskName, procedureInstanceId);
+        userTaskService.completeUserTask(userid, groupid,  inputParams, taskName, procedureId, definitionKey);
         return CommonResult.success(null);
     }
 
@@ -47,8 +52,9 @@ public class TaskController {
         String bussinessKey = bo.getBussinessKey();
         String taskName = bo.getTaskName();
         final Map<String, Object> inputParams = bo.getInputParams();
-        String userId = bo.getUserId();
-        String groupId = bo.getGroupId();
+        String jwtToken = bo.getToken();
+        String userId = JwtTokenHelper.getUserId(jwtTokenHelper.decode(jwtToken));
+        String groupId = JwtTokenHelper.getGroupId(jwtTokenHelper.decode(jwtToken));
         userTaskService.completeUserTaskWithBussinessKey(definitionKey, bussinessKey, inputParams, taskName,  userId, groupId);
         return CommonResult.success(null);
     }

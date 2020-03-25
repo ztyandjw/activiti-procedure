@@ -1,25 +1,33 @@
 package com.tim.activiti;
 
+import com.tim.activiti.service.ProcedureServiceImpl;
 import com.tim.activiti.util.ActivitiUtils;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.bpmn.model.FlowElement;
 import org.activiti.bpmn.model.UserTask;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.ProcessEngines;
-import org.activiti.engine.RepositoryService;
+import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableInstance;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Collection;
-import java.util.List;
+import org.springframework.test.context.junit4.SpringRunner;
+import sun.misc.BASE64Encoder;
+
+import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
 
 /**
  * @author T1m Zhang(49244143@qq.com) 2020/3/2.
@@ -34,6 +42,61 @@ public class TestActiviti {
     @Autowired
     private HistoryService historyService;
 
+    @Autowired
+    private RuntimeService runtimeService;
+
+    @Autowired
+    private TaskService taskService;
+
+    @Autowired
+    private ProcedureServiceImpl procedureService;
+
+
+//    @Autowired
+//    private JwtAccessTokenConverter jwtAccessTokenConverter;
+
+
+    //eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI0NzEyNzEyMy03Y2I3LTQ1MDYtYWIxZi0wZWUxMzQ3YzFlYzQiLCJ1c2VySWQiOiLlvKDkuIkiLCJncm91cElkIjoi57O757uf566h55CG5ZGY57uEIiwiZXhwIjoxNTg1MDk5MDE1fQ.fYXaKc5qUlC1L_5Of-7NA-sn7Af154ZZVlzzEOxWH1U
+    @Test
+    public void testJwt() throws  Exception {
+        BASE64Encoder base64Encoder = new BASE64Encoder();
+        String key = "IGZFZIGkYcWbSDBklck56AT5MmP5hyun";
+        byte[] bytes;
+        bytes = key.getBytes("UTF-8");
+        String abc =  base64Encoder.encode(bytes);
+        SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
+        ZoneId myZone = ZoneId.of("Asia/Shanghai");
+        LocalDateTime now = LocalDateTime.now(myZone);
+        LocalDateTime expireAccessLocalDate = now.plusSeconds(60000);
+        Date expireAccess =  Date.from(expireAccessLocalDate.atZone(myZone).toInstant());
+        String accessJti = UUID.randomUUID().toString();
+        JwtBuilder builder = Jwts.builder()
+                .setId(accessJti)
+                .setHeaderParam("typ", "JWT")
+                .signWith(signatureAlgorithm, abc)
+                .claim("userId", "张三")
+                .claim("groupId", "系统管理员组");
+        builder.setExpiration(expireAccess);
+        String accessToken = builder.compact();
+        System.out.println(accessToken);
+        System.out.println("`12");
+    }
+
+    @Test
+    public void setVars() {
+        try {
+            Map<String, Object> m = new HashMap<>();
+            m.put("emailAddress", "fuckyou");
+            procedureService.updateVars("superapi", "15", m);
+        }
+        catch (Exception e) {
+            System.out.println(e);
+        }
+        System.out.println("here");
+
+
+
+    }
 
     @Test
     public void test1() {

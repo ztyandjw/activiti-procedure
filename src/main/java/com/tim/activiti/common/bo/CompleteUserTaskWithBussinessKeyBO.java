@@ -36,12 +36,16 @@ public class CompleteUserTaskWithBussinessKeyBO implements Serializable {
     @ApiModelProperty(value = "该任务的参数", required = false, example = "{\"approval\": \"true\"}")
     private Map<String,Object> inputParams;
 
-    @ApiModelProperty(value = "申请人用户id", required = true, example = "zhangtianyi")
-    @NotBlank(message = "userId不能为blank,后期通过token传值")
-    private String userId;
+//    @ApiModelProperty(value = "申请人用户id", required = true, example = "zhangtianyi")
+//    @NotBlank(message = "userId不能为blank,后期通过token传值")
+//    private String userId;
+//
+//    @ApiModelProperty(value = "申请人组id", required = true, example = "admin")
+//    private String groupId;
 
-    @ApiModelProperty(value = "申请人组id", required = true, example = "admin")
-    private String groupId;
+    @ApiModelProperty(value = "jwttoken", required = true, example = "jwttoken")
+    @NotBlank(message = "token不能为blank")
+    private String token;
 
 }
 

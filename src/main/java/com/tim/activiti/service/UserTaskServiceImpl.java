@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import com.tim.activiti.common.vo.TaskInfoVO;
 import com.tim.activiti.exception.ActivitiServiceException;
 import com.tim.activiti.util.ActivitiUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.FormProperty;
 import org.activiti.bpmn.model.UserTask;
 import org.activiti.engine.RuntimeService;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 /**
  * @author T1m Zhang(49244143@qq.com) 2020/3/2.
  */
-
+@Slf4j
 @Service
 public class UserTaskServiceImpl {
 
@@ -40,7 +41,7 @@ public class UserTaskServiceImpl {
         UserTask userTask = ActivitiUtils.getFlowElement(definitionKey, UserTask.class, taskName, -999);
 
         TaskInfoVO taskInfoVO = new TaskInfoVO();
-        taskInfoVO.wrapFormProperties(userTask.getFormProperties());
+        taskInfoVO.wrap(userTask.getFormProperties());
         List<String> candidateUsers = userTask.getCandidateUsers();
         List<String> candidateGroups = userTask.getCandidateGroups();
         String assignee = userTask.getAssignee();
@@ -61,7 +62,7 @@ public class UserTaskServiceImpl {
 
 
     //验证这个procedureId是否能找到当前usertask，并且名称是否一致
-    private  Task checkProcedureIdAndTaskName(String procedureId, String taskName) {
+    private  Task valid(String procedureId, String taskName) {
         Task task = taskService.createTaskQuery().processInstanceId(procedureId).singleResult();
         if(task == null) {
             throw new ActivitiServiceException(400, "查询不到可供执行的task");
@@ -78,40 +79,40 @@ public class UserTaskServiceImpl {
     public void completeUserTaskWithBussinessKey(String definitionKey, String bussinessKey, Map<String, Object> inputParams, String taskName, String userId, String groupId) {
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processDefinitionKey(definitionKey).processInstanceBusinessKey(bussinessKey).singleResult();
         if(processInstance == null) {
-            throw new ActivitiServiceException(400, "传入bussinessKey: " + bussinessKey + " definitionKey" + definitionKey + " 无法查询到对应的流程");
+            throw new ActivitiServiceException(400, "bussinessKey: " + bussinessKey + " definitionKey: " + definitionKey + " 无对应流程");
         }
         String procedureId = processInstance.getId();
-        Task task = this.checkProcedureIdAndTaskName(procedureId, taskName);
+        Task task = this.valid(procedureId, taskName);
         String taskId = task.getId();
         UserTask userTask = ActivitiUtils.getFlowElement(definitionKey, UserTask.class, "", -999);
         if(userTask == null) {
-            throw new ActivitiServiceException(500, "服务器内部错误");
+            throw new ActivitiServiceException(500, "服务端内部错误");
         }
         //说明是第一个userTask任务
         if(userTask.getId().equals(taskName) || userTask.getName().equals(taskName)) {
-            String procedureUserId = processInstance.getStartUserId();
-            if(!procedureUserId.equals(userId)) {
-                throw new ActivitiServiceException(401, String.format("用户id : %s不正确, 必须与流程发起用户: %s 保持一致", userId, procedureUserId));
+            String procedureStartUserId = processInstance.getStartUserId();
+            if(!procedureStartUserId.equals(userId)) {
+                throw new ActivitiServiceException(401, String.format("用户id : %s不正确, 必须与流程发起用户: %s 保持一致", userId, procedureStartUserId));
             }
         }
         userTask = ActivitiUtils.getFlowElement(definitionKey, UserTask.class, taskName, -999);
         List<FormProperty> formPropertyList = userTask.getFormProperties();
-        Set<String> allKeys = formPropertyList.stream().map(FormProperty :: getId).collect(Collectors.toSet());
+//        Set<String> allKeys = formPropertyList.stream().map(FormProperty :: getId).collect(Collectors.toSet());
         Set<String> requiredKeys = formPropertyList.stream().filter(property -> property.isRequired() == true).map(FormProperty :: getId).collect(Collectors.toSet());
         if(requiredKeys.size() > 0) {
             if(inputParams == null) {
                 throw new ActivitiServiceException(400, "inputParams不能为空, 缺失字段为: " + StringUtils.join(requiredKeys, ","));
             }
-            Set<String> diff = Sets.newHashSet();
+            Set<String> diff;
             Set<String> inputKeys = inputParams.keySet();
             diff = Sets.difference(requiredKeys, inputKeys);
             if(diff.size() > 0) {
                 throw new ActivitiServiceException(400, "inputParams缺失关键字段, 缺失字段为: " + StringUtils.join(diff, ","));
             }
-            diff = Sets.difference(inputKeys, allKeys);
-            if(diff.size() > 0) {
-                throw new ActivitiServiceException(400, ("inputParams多出字段, 字段为:" +  StringUtils.join(diff, ",")));
-            }
+//            diff = Sets.difference(inputKeys, allKeys);
+//            if(diff.size() > 0) {
+//                throw new ActivitiServiceException(400, ("inputParams多出字段, 字段为:" +  StringUtils.join(diff, ",")));
+//            }
 
         }
         List<String> candidateUsers = userTask.getCandidateUsers();
@@ -127,10 +128,11 @@ public class UserTaskServiceImpl {
 //                    taskService.setAssignee(taskId, userId);
                     taskService.complete(taskId);
                 }
+                log.info("用户id: {} ,完成任务: {}, 流程 {}, 业务id: {}", userId, taskName, processInstance.getProcessDefinitionId(), bussinessKey);
+
             }
             else {
-                throw new ActivitiServiceException(400, "用户id: " + userId + " 该用户没有执行任务的权限");
-
+                throw new ActivitiServiceException(400, "用户id: " + userId + " 没有权限执行任务 " + taskName);
             }
         }
         else {
@@ -144,47 +146,50 @@ public class UserTaskServiceImpl {
 //                    taskService.setAssignee(taskId, userId);
                     taskService.complete(taskId);
                 }
+                log.info("用户id: {} ,完成任务: {}, 流程: {} , 业务id: {}", userId, taskName, processInstance.getProcessDefinitionId(), bussinessKey);
             }
             else {
-                throw new ActivitiServiceException(400, "用户id: " + userId + " 该用户没有执行任务的权限");
+                if(StringUtils.isBlank(groupId) && candidateGroups.size() > 0) {
+                    throw new ActivitiServiceException(401, "用户id: " + userId + " 无权执行任务: " + taskName + "可能由于groupId为blank");
+                }
+                throw new ActivitiServiceException(401, "用户id: " + userId + " 无权执行任务: " + taskName);
             }
         }
     }
 
-    public void completeUserTask(String userId, String groupId, Map<String, Object> inputParams, String taskName, String procedureId) {
-        Task task = this.checkProcedureIdAndTaskName(procedureId, taskName);
+    public void completeUserTask(String userId, String groupId, Map<String, Object> inputParams, String taskName, String procedureId, String definitionKey) {
+        Task task = this.valid(procedureId, taskName);
         String taskId = task.getId();
-        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(procedureId).singleResult();
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processDefinitionKey(definitionKey).processInstanceId(procedureId).singleResult();
         String procedureDefinitionKey = processInstance.getProcessDefinitionKey();
         UserTask userTask = ActivitiUtils.getFlowElement(procedureDefinitionKey, UserTask.class, "", -999);
         if(userTask == null) {
-            throw new ActivitiServiceException(500, "服务器内部错误");
+            throw new ActivitiServiceException(500, "服务端内部错误");
         }
         //说明是第一个userTask任务
         if(userTask.getId().equals(taskName) || userTask.getName().equals(taskName)) {
-            String procedureUserId = processInstance.getStartUserId();
-            if(!procedureUserId.equals(userId)) {
-                throw new ActivitiServiceException(401, String.format("用户id : %s不正确, 必须与流程发起用户: %s 保持一致", userId, procedureUserId));
+            String procedureStartUserId = processInstance.getStartUserId();
+            if(!procedureStartUserId.equals(userId)) {
+                throw new ActivitiServiceException(401, String.format("用户id : %s不正确, 必须与流程发起用户: %s 保持一致", userId, procedureStartUserId));
             }
         }
         userTask = ActivitiUtils.getFlowElement(procedureDefinitionKey, UserTask.class, taskName, -999);
         List<FormProperty> formPropertyList = userTask.getFormProperties();
-        Set<String> allKeys = formPropertyList.stream().map(FormProperty :: getId).collect(Collectors.toSet());
         Set<String> requiredKeys = formPropertyList.stream().filter(property -> property.isRequired() == true).map(FormProperty :: getId).collect(Collectors.toSet());
         if(requiredKeys.size() > 0) {
             if(inputParams == null) {
                 throw new ActivitiServiceException(400, "inputParams不能为空, 缺失字段为: " + StringUtils.join(requiredKeys, ","));
             }
-            Set<String> diff = Sets.newHashSet();
+            Set<String> diff;
             Set<String> inputKeys = inputParams.keySet();
             diff = Sets.difference(requiredKeys, inputKeys);
             if(diff.size() > 0) {
                 throw new ActivitiServiceException(400, "inputParams缺失关键字段, 缺失字段为: " + StringUtils.join(diff, ","));
             }
-            diff = Sets.difference(inputKeys, allKeys);
-            if(diff.size() > 0) {
-                throw new ActivitiServiceException(400, ("inputParams多出字段, 字段为:" +  StringUtils.join(diff, ",")));
-            }
+//            diff = Sets.difference(inputKeys, allKeys);
+//            if(diff.size() > 0) {
+//                throw new ActivitiServiceException(400, ("inputParams多出字段, 字段为:" +  StringUtils.join(diff, ",")));
+//            }
 
         }
         List<String> candidateUsers = userTask.getCandidateUsers();
@@ -200,9 +205,10 @@ public class UserTaskServiceImpl {
 //                    taskService.setAssignee(taskId, userId);
                     taskService.complete(taskId);
                 }
+                log.info("用户id: {} ,完成任务: {}, 流程 {}", userId, taskName, processInstance.getProcessDefinitionId());
             }
             else {
-                throw new ActivitiServiceException(400, "用户id: " + userId + " 该用户没有执行任务的权限");
+                throw new ActivitiServiceException(400, "用户id: " + userId + " 没有权限执行任务 " + taskName);
 
             }
         }
@@ -217,9 +223,14 @@ public class UserTaskServiceImpl {
 //                    taskService.setAssignee(taskId, userId);
                     taskService.complete(taskId);
                 }
+                log.info("用户id: {} ,完成任务: {}, 流程: {} ", userId, taskName, processInstance.getProcessDefinitionId());
+
             }
             else {
-                throw new ActivitiServiceException(400, "用户id: " + userId + " 该用户没有执行任务的权限");
+                if(StringUtils.isBlank(groupId) && candidateGroups.size() > 0) {
+                    throw new ActivitiServiceException(401, "用户id: " + userId + " 无权执行任务: " + taskName + "可能由于groupId为blank");
+                }
+                throw new ActivitiServiceException(401, "用户id: " + userId + " 无权执行任务: " + taskName);
             }
         }
     }

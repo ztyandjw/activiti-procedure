@@ -31,12 +31,10 @@ public class StartProcedureWithBussinessKeyBO implements Serializable{
 
 //    private Map<String, Object> inputParams;
 
-    @ApiModelProperty(value = "是哪个用户完成该任务", required = true, example = "zhangtianyi")
-    @NotBlank(message = "userId申请人id不能为blank")
-    private String userId;
-
-
-
-
-
+//    @ApiModelProperty(value = "是哪个用户完成该任务", required = true, example = "zhangtianyi")
+//    @NotBlank(message = "userId申请人id不能为blank")
+//    private String userId;
+    @ApiModelProperty(value = "jwttoken", required = true, example = "jwttoken")
+    @NotBlank(message = "token不能为blank")
+    private String token;
 }

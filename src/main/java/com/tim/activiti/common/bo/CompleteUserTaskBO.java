@@ -22,13 +22,17 @@ public class CompleteUserTaskBO implements Serializable {
 
 
 
-    @ApiModelProperty(value = "procedureDefinitionKey", required = true, example = "4e0e57f6-5c3b-11ea-9aeb-7085c2cd4cb8")
-    @NotBlank(message = "procedureDefinitionKey不能为blank")
-    private String procedureDefinitionKey;
+    @ApiModelProperty(value = "procedureId", required = true, example = "4e0e57f6-5c3b-11ea-9aeb-7085c2cd4cb8")
+    @NotBlank(message = "procedureId")
+    private String procedureId;
 
     @ApiModelProperty(value = "任务名称，当前流程所在的任务", required = true, example = "用户申请")
     @NotBlank(message = "taskName任务名称不能为blank")
     private String taskName;
+
+    @ApiModelProperty(value = "流程名称", required = true, example = "请假流程")
+    @NotBlank(message = "definitionKey流程定义名称不能为blank")
+    private String definitionKey;
 
     @ApiModelProperty(value = "该任务的参数", required = false, example = "{\"approval\": \"true\"}")
     private Map<String,Object> inputParams;

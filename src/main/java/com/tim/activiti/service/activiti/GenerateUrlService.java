@@ -40,13 +40,13 @@ public class GenerateUrlService extends ActivitiService implements JavaDelegate 
 
     @Override
     public void execute(DelegateExecution execution) {
-
-        logHead(execution, log);
         String urlPath = getApolloConfigValue("generateUrl", "xxx");
+        logHead(execution, log, " 访问url地址" + urlPath);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         Map<String, Object> input = new HashMap();
         input.put("bussinessKey", execution.getProcessInstanceBusinessKey());
+        input.put("token", (String)execution.getVariable("callbackToken"));
         try {
             ResponseEntity<GenerateUrlResult> response = SingleTonHoler.restTemplate.exchange(urlPath, HttpMethod.POST,
                     new HttpEntity<>(input, headers), GenerateUrlResult.class);

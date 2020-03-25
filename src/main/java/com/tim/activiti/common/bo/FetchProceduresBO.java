@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
@@ -29,5 +30,14 @@ public class FetchProceduresBO implements Serializable{
 
     @ApiModelProperty(value = "流程定义名称", required = false, example = "cloud")
     private String definitionKey;
+
+
+    @ApiModelProperty(value = "任务执行者用户id", required = false, example = "zhangtianyi")
+    private String userId;
+    @ApiModelProperty(value = "任务执行者组id", required = false, example = "zhangtianyi")
+    private String groupId;
+    @ApiModelProperty(value = "任务名称", required = false, example = "zhangtianyi")
+    @NotBlank(message = "taskName不能为blank")
+    private String taskName;
 
 }

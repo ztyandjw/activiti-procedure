@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/processdef">
   <process id="superapi" name="superapi" isExecutable="true">
-    <startEvent id="startEvent1"></startEvent>
+    <startEvent id="startEvent1" name="startEvent1"></startEvent>
     <userTask id="用户申请" name="用户申请">
       <extensionElements>
         <activiti:formProperty id="emailAddress" name="emailAddress" type="string" required="true"></activiti:formProperty>
@@ -11,6 +11,7 @@
       <extensionElements>
         <activiti:formProperty id="approval" name="approval" type="boolean" expression="true|false" required="true"></activiti:formProperty>
         <activiti:formProperty id="html" name="html" type="string"></activiti:formProperty>
+        <activiti:formProperty id="callbackToken" name="callbackToken" type="string" required="true"></activiti:formProperty>
       </extensionElements>
     </userTask>
     <serviceTask id="生成url" name="生成url" activiti:class="com.tim.activiti.service.activiti.GenerateUrlService"></serviceTask>
@@ -31,6 +32,8 @@
         <activiti:field name="charset">
           <activiti:string><![CDATA[utf-8]]></activiti:string>
         </activiti:field>
+        <activiti:executionListener event="start" class="com.tim.activiti.service.activiti.EmailStartEvent"></activiti:executionListener>
+        <activiti:executionListener event="end" class="com.tim.activiti.service.activiti.EmailEndEvent"></activiti:executionListener>
       </extensionElements>
     </serviceTask>
     <endEvent id="sid-B1921039-C3F8-4DD9-9465-57EC273E5D7B"></endEvent>
@@ -51,11 +54,13 @@
         <activiti:field name="charset">
           <activiti:string><![CDATA[utf-8]]></activiti:string>
         </activiti:field>
+        <activiti:executionListener event="start" class="com.tim.activiti.service.activiti.EmailStartEvent"></activiti:executionListener>
+        <activiti:executionListener event="end" class="com.tim.activiti.service.activiti.EmailEndEvent"></activiti:executionListener>
       </extensionElements>
     </serviceTask>
     <sequenceFlow id="sid-96EB61EA-BADC-4DB9-9236-837CA77FEB03" sourceRef="startEvent1" targetRef="用户申请"></sequenceFlow>
     <sequenceFlow id="sid-53B8D765-F9D8-4D20-840C-E054420DC75F" sourceRef="用户申请" targetRef="审批"></sequenceFlow>
-    <intermediateCatchEvent id="sid-BC927C9E-EBB7-42BB-A612-AC61F436C57F">
+    <intermediateCatchEvent id="定时器任务" name="定时器任务">
       <extensionElements>
         <activiti:executionListener event="start" class="com.tim.activiti.service.activiti.TimerStartEvent"></activiti:executionListener>
         <activiti:executionListener event="end" class="com.tim.activiti.service.activiti.TimerEndEvent"></activiti:executionListener>
@@ -72,8 +77,8 @@
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approval==true}]]></conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="sid-0FA82264-D139-4FE8-BCF8-34FB926F988C" sourceRef="生成url" targetRef="云平台资源申请成功邮件"></sequenceFlow>
-    <sequenceFlow id="sid-2F34CC85-B308-40F8-ADBA-CAD0989A6F6C" sourceRef="云平台资源申请成功邮件" targetRef="sid-BC927C9E-EBB7-42BB-A612-AC61F436C57F"></sequenceFlow>
-    <sequenceFlow id="sid-2CD48A05-6602-4C26-9B40-8AD63ECBBAFD" sourceRef="sid-BC927C9E-EBB7-42BB-A612-AC61F436C57F" targetRef="终止url"></sequenceFlow>
+    <sequenceFlow id="sid-2F34CC85-B308-40F8-ADBA-CAD0989A6F6C" sourceRef="云平台资源申请成功邮件" targetRef="定时器任务"></sequenceFlow>
+    <sequenceFlow id="sid-2CD48A05-6602-4C26-9B40-8AD63ECBBAFD" sourceRef="定时器任务" targetRef="终止url"></sequenceFlow>
     <sequenceFlow id="sid-A2F056CB-D44D-4D0C-8EF4-ABE207FE95CF" sourceRef="终止url" targetRef="sid-B1921039-C3F8-4DD9-9465-57EC273E5D7B"></sequenceFlow>
     <sequenceFlow id="sid-39B9886E-E37F-45FA-9AF6-F4D8B6F826D9" sourceRef="云平台资源申请拒绝邮件" targetRef="sid-B1921039-C3F8-4DD9-9465-57EC273E5D7B"></sequenceFlow>
   </process>
@@ -100,7 +105,7 @@
       <bpmndi:BPMNShape bpmnElement="云平台资源申请拒绝邮件" id="BPMNShape_云平台资源申请拒绝邮件">
         <omgdc:Bounds height="80.0" width="100.0" x="750.0" y="360.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="sid-BC927C9E-EBB7-42BB-A612-AC61F436C57F" id="BPMNShape_sid-BC927C9E-EBB7-42BB-A612-AC61F436C57F">
+      <bpmndi:BPMNShape bpmnElement="定时器任务" id="BPMNShape_定时器任务">
         <omgdc:Bounds height="31.0" width="31.0" x="870.0" y="69.5"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="终止url" id="BPMNShape_终止url">
@@ -135,7 +140,7 @@
         <omgdi:waypoint x="360.0" y="400.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-2CD48A05-6602-4C26-9B40-8AD63ECBBAFD" id="BPMNEdge_sid-2CD48A05-6602-4C26-9B40-8AD63ECBBAFD">
-        <omgdi:waypoint x="901.0" y="85.0"></omgdi:waypoint>
+        <omgdi:waypoint x="934.90625" y="85.0"></omgdi:waypoint>
         <omgdi:waypoint x="1044.0" y="85.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-96EB61EA-BADC-4DB9-9236-837CA77FEB03" id="BPMNEdge_sid-96EB61EA-BADC-4DB9-9236-837CA77FEB03">

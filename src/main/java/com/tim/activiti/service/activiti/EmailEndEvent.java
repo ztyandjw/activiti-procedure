@@ -5,14 +5,15 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.ExecutionListener;
 
 /**
- * @author T1m Zhang(49244143@qq.com) 2020/3/18.
+ * @author T1m Zhang(49244143@qq.com) 2020/3/19.
  */
 @Slf4j
-public class TimerEndEvent  extends  ActivitiService implements ExecutionListener {
+public class EmailEndEvent extends  ActivitiService implements ExecutionListener {
 
 
     @Override
     public void notify(DelegateExecution execution) {
-        logTailSuccess(execution, log, "定时器时间已到 " + (String)execution.getVariable("expiredDate") + "推动后续节点");
+        logTailSuccess(execution, log);
+
     }
 }

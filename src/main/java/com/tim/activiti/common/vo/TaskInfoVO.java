@@ -25,7 +25,7 @@ public class TaskInfoVO {
     private String procedureDefinitionKey;
 
 
-    public void wrapFormProperties(List<FormProperty> formProperties) {
+    public void wrap(List<FormProperty> formProperties) {
         properties = new ArrayList<>();
         for(FormProperty formProperty: formProperties) {
             Property property = new Property();
