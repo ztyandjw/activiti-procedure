@@ -24,17 +24,18 @@ public abstract class ActivitiService {
     protected void logHead(DelegateExecution execution, Logger logger, String ... strs) {
 
 
-        logger.info(" {} 开始执行  流程 {}, 业务id {},  {}", this.getClass().getCanonicalName(),
-                execution.getProcessDefinitionId(), execution.getProcessInstanceBusinessKey(), StringUtils.join(strs, ", "));
+        logger.info(" {} 开始执行  流程名称 {}, 流程id {}, 业务id {},  {}", this.getClass().getCanonicalName(),
+                execution.getProcessDefinitionId(), execution.getProcessInstanceId(), execution.getProcessInstanceBusinessKey(), StringUtils.join(strs, ", "));
     }
 
     protected void logTailSuccess(DelegateExecution execution, Logger logger, String ... strs) {
-        logger.info(" {} 成功  流程 {},  业务id {} ,{}", this.getClass().getCanonicalName(),
-                execution.getProcessDefinitionId(), execution.getProcessInstanceBusinessKey(), StringUtils.join(strs, ", "));
+        logger.info(" {} 成功  流程名称 {}, 流程id {},  业务id {} ,{}", this.getClass().getCanonicalName(),
+                execution.getProcessDefinitionId(), execution.getProcessInstanceId(),  execution.getProcessInstanceBusinessKey(), StringUtils.join(strs, ", "));
     }
 
     protected void logTailFail(DelegateExecution execution, Logger logger, String ... strs) {
-        logger.info(" {} 失败  流程{}, 业务id {}", this.getClass().getCanonicalName(),
+        logger.info(" {} 失败   流程名称 {}, 流程id {}, 业务id {}", this.getClass().getCanonicalName(),
+                execution.getProcessDefinitionId(), execution.getProcessInstanceId(),
                 execution.getProcessDefinitionId(), execution.getProcessInstanceBusinessKey());
     }
 }

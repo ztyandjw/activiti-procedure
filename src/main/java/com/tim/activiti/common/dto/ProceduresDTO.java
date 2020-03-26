@@ -43,7 +43,8 @@ public class ProceduresDTO implements Serializable {
     private String bussinessKey;
     private String taskName;
     private String taskAssignee;
-
+    private String currentNodeId;
+    private String currentNodeType;
 
      public void  wrap(List<HistoricVariableInstance> varInstanceList, HistoricProcessInstance historicProcessInstance) {
         startTime = historicProcessInstance.getStartTime();
@@ -71,9 +72,4 @@ public class ProceduresDTO implements Serializable {
         procedureDefinitionKey = historicProcessInstance.getProcessDefinitionKey();
         bussinessKey = historicProcessInstance.getBusinessKey();
     }
-
-
-
-
-
 }

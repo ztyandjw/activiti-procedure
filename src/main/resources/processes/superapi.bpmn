@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/processdef">
   <process id="superapi" name="superapi" isExecutable="true">
-    <startEvent id="startEvent1" name="startEvent1"></startEvent>
+    <startEvent id="开始节点" name="开始节点"></startEvent>
     <userTask id="用户申请" name="用户申请">
       <extensionElements>
         <activiti:formProperty id="emailAddress" name="emailAddress" type="string" required="true"></activiti:formProperty>
@@ -36,7 +36,7 @@
         <activiti:executionListener event="end" class="com.tim.activiti.service.activiti.EmailEndEvent"></activiti:executionListener>
       </extensionElements>
     </serviceTask>
-    <endEvent id="sid-B1921039-C3F8-4DD9-9465-57EC273E5D7B"></endEvent>
+    <endEvent id="结束节点" name="结束节点"></endEvent>
     <serviceTask id="云平台资源申请拒绝邮件" name="云平台资源申请拒绝邮件" activiti:type="mail">
       <extensionElements>
         <activiti:field name="to">
@@ -58,7 +58,7 @@
         <activiti:executionListener event="end" class="com.tim.activiti.service.activiti.EmailEndEvent"></activiti:executionListener>
       </extensionElements>
     </serviceTask>
-    <sequenceFlow id="sid-96EB61EA-BADC-4DB9-9236-837CA77FEB03" sourceRef="startEvent1" targetRef="用户申请"></sequenceFlow>
+    <sequenceFlow id="sid-96EB61EA-BADC-4DB9-9236-837CA77FEB03" sourceRef="开始节点" targetRef="用户申请"></sequenceFlow>
     <sequenceFlow id="sid-53B8D765-F9D8-4D20-840C-E054420DC75F" sourceRef="用户申请" targetRef="审批"></sequenceFlow>
     <intermediateCatchEvent id="定时器任务" name="定时器任务">
       <extensionElements>
@@ -77,14 +77,14 @@
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approval==true}]]></conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="sid-0FA82264-D139-4FE8-BCF8-34FB926F988C" sourceRef="生成url" targetRef="云平台资源申请成功邮件"></sequenceFlow>
-    <sequenceFlow id="sid-2F34CC85-B308-40F8-ADBA-CAD0989A6F6C" sourceRef="云平台资源申请成功邮件" targetRef="定时器任务"></sequenceFlow>
     <sequenceFlow id="sid-2CD48A05-6602-4C26-9B40-8AD63ECBBAFD" sourceRef="定时器任务" targetRef="终止url"></sequenceFlow>
-    <sequenceFlow id="sid-A2F056CB-D44D-4D0C-8EF4-ABE207FE95CF" sourceRef="终止url" targetRef="sid-B1921039-C3F8-4DD9-9465-57EC273E5D7B"></sequenceFlow>
-    <sequenceFlow id="sid-39B9886E-E37F-45FA-9AF6-F4D8B6F826D9" sourceRef="云平台资源申请拒绝邮件" targetRef="sid-B1921039-C3F8-4DD9-9465-57EC273E5D7B"></sequenceFlow>
+    <sequenceFlow id="sid-A2F056CB-D44D-4D0C-8EF4-ABE207FE95CF" sourceRef="终止url" targetRef="结束节点"></sequenceFlow>
+    <sequenceFlow id="sid-39B9886E-E37F-45FA-9AF6-F4D8B6F826D9" sourceRef="云平台资源申请拒绝邮件" targetRef="结束节点"></sequenceFlow>
+    <sequenceFlow id="sid-2F34CC85-B308-40F8-ADBA-CAD0989A6F6C" sourceRef="云平台资源申请成功邮件" targetRef="定时器任务"></sequenceFlow>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_superapi">
     <bpmndi:BPMNPlane bpmnElement="superapi" id="BPMNPlane_superapi">
-      <bpmndi:BPMNShape bpmnElement="startEvent1" id="BPMNShape_startEvent1">
+      <bpmndi:BPMNShape bpmnElement="开始节点" id="BPMNShape_开始节点">
         <omgdc:Bounds height="30.0" width="30.0" x="60.0" y="45.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="用户申请" id="BPMNShape_用户申请">
@@ -99,17 +99,17 @@
       <bpmndi:BPMNShape bpmnElement="云平台资源申请成功邮件" id="BPMNShape_云平台资源申请成功邮件">
         <omgdc:Bounds height="80.0" width="100.0" x="630.0" y="45.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="sid-B1921039-C3F8-4DD9-9465-57EC273E5D7B" id="BPMNShape_sid-B1921039-C3F8-4DD9-9465-57EC273E5D7B">
-        <omgdc:Bounds height="28.0" width="28.0" x="1080.0" y="386.0"></omgdc:Bounds>
+      <bpmndi:BPMNShape bpmnElement="结束节点" id="BPMNShape_结束节点">
+        <omgdc:Bounds height="28.0" width="28.0" x="1065.0" y="375.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="云平台资源申请拒绝邮件" id="BPMNShape_云平台资源申请拒绝邮件">
         <omgdc:Bounds height="80.0" width="100.0" x="750.0" y="360.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="定时器任务" id="BPMNShape_定时器任务">
-        <omgdc:Bounds height="31.0" width="31.0" x="870.0" y="69.5"></omgdc:Bounds>
+        <omgdc:Bounds height="31.0" width="31.0" x="855.0" y="60.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="终止url" id="BPMNShape_终止url">
-        <omgdc:Bounds height="80.0" width="100.0" x="1044.0" y="45.0"></omgdc:Bounds>
+        <omgdc:Bounds height="80.0" width="100.0" x="1035.0" y="45.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="sid-0FA82264-D139-4FE8-BCF8-34FB926F988C" id="BPMNEdge_sid-0FA82264-D139-4FE8-BCF8-34FB926F988C">
         <omgdi:waypoint x="460.0" y="85.0"></omgdi:waypoint>
@@ -117,7 +117,9 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-39B9886E-E37F-45FA-9AF6-F4D8B6F826D9" id="BPMNEdge_sid-39B9886E-E37F-45FA-9AF6-F4D8B6F826D9">
         <omgdi:waypoint x="850.0" y="400.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1080.0" y="400.0"></omgdi:waypoint>
+        <omgdi:waypoint x="957.5" y="400.0"></omgdi:waypoint>
+        <omgdi:waypoint x="957.5" y="389.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1065.0" y="389.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-3249AC58-062C-4D03-B9DF-E98B94454566" id="BPMNEdge_sid-3249AC58-062C-4D03-B9DF-E98B94454566">
         <omgdi:waypoint x="410.0" y="360.0"></omgdi:waypoint>
@@ -125,11 +127,15 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-2F34CC85-B308-40F8-ADBA-CAD0989A6F6C" id="BPMNEdge_sid-2F34CC85-B308-40F8-ADBA-CAD0989A6F6C">
         <omgdi:waypoint x="730.0" y="85.0"></omgdi:waypoint>
-        <omgdi:waypoint x="870.0" y="85.0"></omgdi:waypoint>
+        <omgdi:waypoint x="792.5" y="85.0"></omgdi:waypoint>
+        <omgdi:waypoint x="792.5" y="76.0"></omgdi:waypoint>
+        <omgdi:waypoint x="855.0" y="76.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-A2F056CB-D44D-4D0C-8EF4-ABE207FE95CF" id="BPMNEdge_sid-A2F056CB-D44D-4D0C-8EF4-ABE207FE95CF">
-        <omgdi:waypoint x="1094.0" y="125.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1094.0" y="386.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1085.0" y="125.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1085.0" y="250.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1079.0" y="250.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1079.0" y="375.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-BE837570-C4D9-4C6B-A528-47CD3B5C2AF5" id="BPMNEdge_sid-BE837570-C4D9-4C6B-A528-47CD3B5C2AF5">
         <omgdi:waypoint x="460.0" y="400.0"></omgdi:waypoint>
@@ -140,8 +146,10 @@
         <omgdi:waypoint x="360.0" y="400.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-2CD48A05-6602-4C26-9B40-8AD63ECBBAFD" id="BPMNEdge_sid-2CD48A05-6602-4C26-9B40-8AD63ECBBAFD">
-        <omgdi:waypoint x="934.90625" y="85.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1044.0" y="85.0"></omgdi:waypoint>
+        <omgdi:waypoint x="919.90625" y="75.5"></omgdi:waypoint>
+        <omgdi:waypoint x="960.5" y="75.5"></omgdi:waypoint>
+        <omgdi:waypoint x="960.5" y="85.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1035.0" y="85.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-96EB61EA-BADC-4DB9-9236-837CA77FEB03" id="BPMNEdge_sid-96EB61EA-BADC-4DB9-9236-837CA77FEB03">
         <omgdi:waypoint x="75.0" y="75.0"></omgdi:waypoint>

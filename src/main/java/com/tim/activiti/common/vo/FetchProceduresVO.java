@@ -22,4 +22,5 @@ public class FetchProceduresVO implements Serializable {
     private Integer num;
 
     private List<ProceduresDTO> list;
+
 }

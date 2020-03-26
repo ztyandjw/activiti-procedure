@@ -5,7 +5,7 @@
     <userTask id="申请发送邮件" name="申请发送邮件">
       <extensionElements>
         <activiti:formProperty id="html" name="html" type="string" expression="邮件内容" required="true"></activiti:formProperty>
-        <activiti:formProperty id="to" name="to" type="string" expression="邮件接收者" required="true"></activiti:formProperty>
+        <activiti:formProperty id="emailAddress" name="emailAddress" type="string" expression="邮件接收者" required="true"></activiti:formProperty>
         <activiti:formProperty id="subject" name="subject" type="string" expression="主题" required="true"></activiti:formProperty>
       </extensionElements>
     </userTask>
@@ -13,7 +13,7 @@
     <serviceTask id="发送邮件" name="发送邮件" activiti:type="mail">
       <extensionElements>
         <activiti:field name="to">
-          <activiti:expression><![CDATA[${to}]]></activiti:expression>
+          <activiti:expression><![CDATA[${emailAddress}]]></activiti:expression>
         </activiti:field>
         <activiti:field name="from">
           <activiti:string><![CDATA[51cloud@51hitech.com]]></activiti:string>
@@ -27,6 +27,8 @@
         <activiti:field name="charset">
           <activiti:string><![CDATA[utf-8]]></activiti:string>
         </activiti:field>
+        <activiti:executionListener event="start" class="com.tim.activiti.service.activiti.EmailStartEvent"></activiti:executionListener>
+        <activiti:executionListener event="start" class="com.tim.activiti.service.activiti.EmailEndEvent"></activiti:executionListener>
       </extensionElements>
     </serviceTask>
     <sequenceFlow id="sid-8668BDC4-4D62-4958-9E42-5655A3FE84D4" sourceRef="申请发送邮件" targetRef="发送邮件"></sequenceFlow>
@@ -39,7 +41,7 @@
         <omgdc:Bounds height="30.0" width="30.0" x="90.0" y="255.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="申请发送邮件" id="BPMNShape_申请发送邮件">
-        <omgdc:Bounds height="80.0" width="100.0" x="255.0" y="229.0"></omgdc:Bounds>
+        <omgdc:Bounds height="80.0" width="100.0" x="255.0" y="210.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="发送邮件" id="BPMNShape_发送邮件">
         <omgdc:Bounds height="80.0" width="100.0" x="600.0" y="225.0"></omgdc:Bounds>
@@ -54,14 +56,16 @@
         <omgdi:waypoint x="945.0" y="269.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-8668BDC4-4D62-4958-9E42-5655A3FE84D4" id="BPMNEdge_sid-8668BDC4-4D62-4958-9E42-5655A3FE84D4">
-        <omgdi:waypoint x="355.0" y="269.0"></omgdi:waypoint>
-        <omgdi:waypoint x="477.5" y="269.0"></omgdi:waypoint>
+        <omgdi:waypoint x="355.0" y="250.0"></omgdi:waypoint>
+        <omgdi:waypoint x="477.5" y="250.0"></omgdi:waypoint>
         <omgdi:waypoint x="477.5" y="265.0"></omgdi:waypoint>
         <omgdi:waypoint x="600.0" y="265.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-4BDB50E1-273A-4B66-A5E6-3943D943653C" id="BPMNEdge_sid-4BDB50E1-273A-4B66-A5E6-3943D943653C">
-        <omgdi:waypoint x="119.99981250351556" y="269.9250009374824"></omgdi:waypoint>
-        <omgdi:waypoint x="255.0" y="269.25"></omgdi:waypoint>
+        <omgdi:waypoint x="120.0" y="270.0"></omgdi:waypoint>
+        <omgdi:waypoint x="187.5" y="270.0"></omgdi:waypoint>
+        <omgdi:waypoint x="187.5" y="250.0"></omgdi:waypoint>
+        <omgdi:waypoint x="255.0" y="250.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

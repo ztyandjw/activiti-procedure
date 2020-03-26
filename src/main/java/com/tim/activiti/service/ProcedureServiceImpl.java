@@ -2,7 +2,6 @@ package com.tim.activiti.service;
 
 import com.google.common.collect.Lists;
 import com.tim.activiti.common.dto.ProceduresDTO;
-import com.tim.activiti.common.dto.FetchProceduresByUserOrGroupDTO;
 import com.tim.activiti.exception.ActivitiServiceException;
 import com.tim.activiti.util.ActivitiUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -10,19 +9,19 @@ import org.activiti.bpmn.model.UserTask;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
-import org.activiti.engine.history.HistoricProcessInstance;
-import org.activiti.engine.history.HistoricProcessInstanceQuery;
-import org.activiti.engine.history.HistoricTaskInstance;
-import org.activiti.engine.history.HistoricVariableInstance;
+import org.activiti.engine.history.*;
 import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author T1m Zhang(49244143@qq.com) 2020/2/28.
@@ -39,6 +38,10 @@ public class ProcedureServiceImpl {
 
     @Autowired
     private TaskService taskService;
+
+
+    @Value("${pageSize:5}")
+    private Integer pageSize;
 
     private Task valid(String definitionKey, String bussinessKey) {
         if(historyService.createHistoricProcessInstanceQuery().processDefinitionKey(definitionKey).processInstanceBusinessKey(bussinessKey).singleResult() == null) {
@@ -78,53 +81,78 @@ public class ProcedureServiceImpl {
             }
             processInstance = runtimeService.startProcessInstanceByKey(definitionKey, bussinessKey);
             id = processInstance.getId();
-            log.info("用户id: {} ,发起流程: {}, 业务id: {}", userId, processInstance.getProcessDefinitionId(), bussinessKey);
+            log.info("用户id: {} ,发起流程: {}, 流程id {}, 业务id: {}", userId, definitionKey, id,  bussinessKey);
         }
         else {
             processInstance = runtimeService.startProcessInstanceByKey(definitionKey);
             id = processInstance.getId();
-            log.info("用户id: {} ,发起流程: {}", userId, processInstance.getProcessDefinitionId());
+            log.info("用户id: {} ,发起流程: {},  流程id {},", userId, definitionKey, id);
         }
         return id;
     }
 
-    private HistoricProcessInstanceQuery filter(String definitionKey, String startUserId, String order) {
-        HistoricProcessInstanceQuery query = null;
-        if(definitionKey != null && StringUtils.isNotBlank(definitionKey.trim())) {
-            query = historyService.createHistoricProcessInstanceQuery().processDefinitionKey(definitionKey);
-        }
-        if(startUserId != null && StringUtils.isNotBlank(startUserId.trim())) {
-            query.startedBy(startUserId);
-        }
-        if(StringUtils.isNotBlank(order)) {
-            if(order.equals("asc")) {
-                query.orderByProcessInstanceStartTime().asc();
-            }
-            else {
-                query.orderByProcessInstanceStartTime().desc();
-            }
-        }
-        else {
-            query.orderByProcessInstanceStartTime().desc();
-        }
-        return query;
-    }
+//    private HistoricProcessInstanceQuery filter(String definitionKey, String startUserId, String order) {
+//        HistoricProcessInstanceQuery query = null;
+//        if(definitionKey != null && StringUtils.isNotBlank(definitionKey.trim())) {
+//            query = historyService.createHistoricProcessInstanceQuery().processDefinitionKey(definitionKey);
+//        }
+//        if(startUserId != null && StringUtils.isNotBlank(startUserId.trim())) {
+//            query.startedBy(startUserId);
+//        }
+//        if(StringUtils.isNotBlank(order)) {
+//            if(order.equals("asc")) {
+//                query.orderByProcessInstanceStartTime().asc();
+//            }
+//            else {
+//                query.orderByProcessInstanceStartTime().desc();
+//            }
+//        }
+//        else {
+//            query.orderByProcessInstanceStartTime().desc();
+//        }
+//        return query;
+//    }
 
 
 
-    private ProceduresDTO getPorcedureDTO(String taskAssignee, String taskName, HistoricProcessInstance historicProcessInstance) {
+
+    private ProceduresDTO getPorcedureDTO(String taskName, String taskAssignee, HistoricProcessInstance historicProcessInstance) {
+
         List<HistoricVariableInstance> varInstanceList = historyService.createHistoricVariableInstanceQuery().processInstanceId(historicProcessInstance.getId()).list();
         ProceduresDTO proceduresDTO = new ProceduresDTO();
         proceduresDTO.wrap(varInstanceList, historicProcessInstance);
         proceduresDTO.setTaskAssignee(taskAssignee);
         proceduresDTO.setTaskName(taskName);
+        List<HistoricActivityInstance> list = historyService.createHistoricActivityInstanceQuery().processInstanceId(historicProcessInstance.getId()).orderByHistoricActivityInstanceStartTime().asc().list();
+        //存在结束节点
+        if(list.stream().filter(n -> n.getActivityType().equals("endEvent")).count() == 1L) {
+            proceduresDTO.setCurrentNodeId("结束节点");
+            proceduresDTO.setCurrentNodeType("endEvent");
+            return proceduresDTO;
+        }
+        Optional<HistoricActivityInstance> optionalInstance = list.stream().filter(n -> n.getEndTime() == null).findFirst();
+        if(optionalInstance.isPresent()) {
+            HistoricActivityInstance instance = optionalInstance.get();
+            proceduresDTO.setCurrentNodeId(instance.getActivityId());
+            proceduresDTO.setCurrentNodeType(instance.getActivityType());
+            return proceduresDTO;
+        }
         return proceduresDTO;
+    }
+
+    private  void  fillProcedureDTOs(List<HistoricProcessInstance> historicProcessInstances, String taskName) {
+        List<ProceduresDTO> procedures = Lists.newArrayList();
+        for(HistoricProcessInstance historicProcessInstance: historicProcessInstances) {
+            //若为null, 说明任务没有被执行完成也没有马上要被执行
+            HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(historicProcessInstance.getId()).taskName(taskName).singleResult();
+            procedures.add(getPorcedureDTO(historicTaskInstance.getAssignee(), taskName, historicProcessInstance));
+        }
     }
 
 
 
-    private  List<ProceduresDTO> fetchProceduresByTaskNameNotBlank(List<HistoricProcessInstance> historicProcessInstances, String definitionKey, String taskName, String userId, String groupId) {
-        List<ProceduresDTO> procedures = Lists.newArrayList();
+    private  List<HistoricProcessInstance> getHistoricProcessInstancesByTaskStatus(List<HistoricProcessInstance> historicProcessInstances, String definitionKey, String taskName, String userId, String groupId) {
+        List<HistoricProcessInstance> newHistoricProcessInstances = Lists.newArrayList();
 
         for(HistoricProcessInstance historicProcessInstance: historicProcessInstances) {
             //若为null, 说明任务没有被执行完成也没有马上要被执行
@@ -137,31 +165,82 @@ public class ProcedureServiceImpl {
             String assignee = userTask.getAssignee();
             List<String> candidateGroups = userTask.getCandidateGroups();
             List<String> candidateUsers = userTask.getCandidateUsers();
+            if(assignee == null && candidateGroups.size() == 0 && candidateGroups.size() == 0) {
+                newHistoricProcessInstances.add(historicProcessInstance);
+                continue;
+            }
             if(assignee != null && userId.equals(assignee)) {
-                procedures.add(getPorcedureDTO(historicTaskInstance.getAssignee(), taskName, historicProcessInstance));
+                newHistoricProcessInstances.add(historicProcessInstance);
+
                 continue;
             }
             if(candidateUsers.contains(userId)) {
-                procedures.add(getPorcedureDTO(historicTaskInstance.getAssignee(), taskName, historicProcessInstance));
+                newHistoricProcessInstances.add(historicProcessInstance);
+
                 continue;
             }
             if(candidateGroups.contains(groupId)) {
-                procedures.add(getPorcedureDTO(historicTaskInstance.getAssignee(), taskName, historicProcessInstance));
+                newHistoricProcessInstances.add(historicProcessInstance);
+
                 continue;
             }
         }
-        return procedures;
+        return newHistoricProcessInstances;
     }
 
-    public List<ProceduresDTO> fetchProcedures(String definitionKey, String startUserId, String order, String taskName, String taskUserId, String taskGroupId) {
+
+    private List<ProceduresDTO> paging(List<ProceduresDTO> proceduresDTOS, Integer pageNum) {
+        if(pageNum == null) {
+            pageNum =1;
+        }
+        int totalSize = proceduresDTOS.size();
+        int pageCount;
+        if(totalSize % pageSize == 0) {
+            pageCount = totalSize/pageSize;
+        }
+        else {
+            pageCount = totalSize/pageSize + 1;
+        }
+        if(pageNum > pageCount) {
+            pageNum = pageCount;
+        }
+        int endIndex;
+        //不是最后页
+        int frontIndex = (pageNum -1)* pageSize;
+        if(pageNum != pageCount) {
+            endIndex = frontIndex + pageSize;
+        }
+        else {
+            endIndex = totalSize;
+        }
+        return  proceduresDTOS.stream().skip(frontIndex).limit(endIndex - frontIndex).collect(Collectors.toList());
+    }
+
+
+    public List<ProceduresDTO> fetchAllProcedures(String definitionKey, String bussinessKey, String procedureId, String taskName, String taskUserId, String taskGroupId, Integer pageNum) {
         List<ProceduresDTO> procedures = Lists.newArrayList();
-        List<HistoricProcessInstance> historicProcessInstances = this.filter(definitionKey, startUserId, order).list();
+        List<HistoricProcessInstance> historicProcessInstances = historyService.createHistoricProcessInstanceQuery().processInstanceBusinessKey(bussinessKey).processInstanceId(procedureId).processDefinitionKey(definitionKey).orderByProcessInstanceStartTime().desc().list();
+        if(historicProcessInstances.size() == 0) {
+            return procedures;
+        }
         if(StringUtils.isNotBlank(taskName)) {
-            return fetchProceduresByTaskNameNotBlank(historicProcessInstances, definitionKey, taskName, taskUserId, taskGroupId);
+            historicProcessInstances = getHistoricProcessInstancesByTaskStatus(historicProcessInstances, definitionKey, taskName, taskUserId, taskGroupId);
+            for(HistoricProcessInstance historicProcessInstance: historicProcessInstances) {
+                HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(historicProcessInstance.getId()).taskName(taskName).singleResult();
+                procedures.add(getPorcedureDTO(historicTaskInstance.getName(), historicTaskInstance.getAssignee(), historicProcessInstance));
+            }
+            return procedures;
         }
         for(HistoricProcessInstance historicProcessInstance: historicProcessInstances) {
             procedures.add(getPorcedureDTO(null, null, historicProcessInstance));
         }
+
         return procedures;
     }
+
+    public List<ProceduresDTO> fetchPagingProcedures(Integer pageNum, List<ProceduresDTO> proceduresDTOS) {
+        return paging(proceduresDTOS, pageNum);
+    }
+
+
 }

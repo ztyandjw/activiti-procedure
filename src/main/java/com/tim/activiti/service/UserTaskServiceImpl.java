@@ -128,7 +128,7 @@ public class UserTaskServiceImpl {
 //                    taskService.setAssignee(taskId, userId);
                     taskService.complete(taskId);
                 }
-                log.info("用户id: {} ,完成任务: {}, 流程 {}, 业务id: {}", userId, taskName, processInstance.getProcessDefinitionId(), bussinessKey);
+                log.info("用户id: {} ,完成任务: {}, 流程名称 {}, 流程id{},  业务id: {}", userId, taskName, definitionKey, procedureId,  bussinessKey);
 
             }
             else {
@@ -146,7 +146,7 @@ public class UserTaskServiceImpl {
 //                    taskService.setAssignee(taskId, userId);
                     taskService.complete(taskId);
                 }
-                log.info("用户id: {} ,完成任务: {}, 流程: {} , 业务id: {}", userId, taskName, processInstance.getProcessDefinitionId(), bussinessKey);
+                log.info("用户id: {} ,完成任务: {}, 流程名称 {}, 流程id{},  业务id: {}", userId, taskName, definitionKey, procedureId,  bussinessKey);
             }
             else {
                 if(StringUtils.isBlank(groupId) && candidateGroups.size() > 0) {
@@ -205,7 +205,7 @@ public class UserTaskServiceImpl {
 //                    taskService.setAssignee(taskId, userId);
                     taskService.complete(taskId);
                 }
-                log.info("用户id: {} ,完成任务: {}, 流程 {}", userId, taskName, processInstance.getProcessDefinitionId());
+                log.info("用户id: {} ,完成任务: {}, 流程名称 {}, 流程id{}", userId, taskName, definitionKey, procedureId);
             }
             else {
                 throw new ActivitiServiceException(400, "用户id: " + userId + " 没有权限执行任务 " + taskName);
@@ -223,7 +223,7 @@ public class UserTaskServiceImpl {
 //                    taskService.setAssignee(taskId, userId);
                     taskService.complete(taskId);
                 }
-                log.info("用户id: {} ,完成任务: {}, 流程: {} ", userId, taskName, processInstance.getProcessDefinitionId());
+                log.info("用户id: {} ,完成任务: {}, 流程名称 {}, 流程id{}", userId, taskName, definitionKey, procedureId);
 
             }
             else {

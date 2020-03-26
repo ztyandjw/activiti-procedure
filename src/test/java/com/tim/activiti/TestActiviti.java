@@ -10,6 +10,7 @@ import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.bpmn.model.FlowElement;
 import org.activiti.bpmn.model.UserTask;
 import org.activiti.engine.*;
+import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableInstance;
@@ -28,6 +29,7 @@ import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author T1m Zhang(49244143@qq.com) 2020/3/2.
@@ -52,11 +54,25 @@ public class TestActiviti {
     private ProcedureServiceImpl procedureService;
 
 
+    @Test
+    public void history() {
+        List a = historyService.createHistoricProcessInstanceQuery().processInstanceBusinessKey("aac").processInstanceId("a9be490e-6f2e-11ea-bd1d-7085c2cd4cb8").processDefinitionKey("superapi").list();
+        System.out.println("123");
+    }
+
+    @Test
+    public void split(){
+        List<Integer> list = Arrays.asList(1, 2, 3, 4, 5, 6, 7);
+        System.out.println(list);
+        list = list.stream().skip(3).limit(3).collect(Collectors.toList());
+        System.out.println(list);
+    }
+
 //    @Autowired
 //    private JwtAccessTokenConverter jwtAccessTokenConverter;
 
 
-    //eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI0NzEyNzEyMy03Y2I3LTQ1MDYtYWIxZi0wZWUxMzQ3YzFlYzQiLCJ1c2VySWQiOiLlvKDkuIkiLCJncm91cElkIjoi57O757uf566h55CG5ZGY57uEIiwiZXhwIjoxNTg1MDk5MDE1fQ.fYXaKc5qUlC1L_5Of-7NA-sn7Af154ZZVlzzEOxWH1U
+//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZGNkMGVjOTFiNjBiOWZjOTQxNzUzZDkiLCJncm91cElkIjoiNWQyNWJjODFmY2RmZmM5N2Q0OTcyZGIzIiwiZ3JvdXBOYW1lIjoi57O757uf566h55CG5ZGY57uEIiwiaWF0IjoxNTg1MTA3MTM3LCJleHAiOjE1ODc2OTkxMzcsImlzcyI6Imh0dHA6Ly93d3cuNTFoaXRlY2guY29tLyIsInN1YiI6IuWcsOeQg-WFi-mahueglOeptumZouS6keW5s-WPsCJ9.GRUUMefVOZX8sjc1TOm0Skpl3uldsKN_sJ5GeaNMFdg
     @Test
     public void testJwt() throws  Exception {
         BASE64Encoder base64Encoder = new BASE64Encoder();
@@ -75,7 +91,7 @@ public class TestActiviti {
                 .setHeaderParam("typ", "JWT")
                 .signWith(signatureAlgorithm, abc)
                 .claim("userId", "张三")
-                .claim("groupId", "系统管理员组");
+                .claim("groupName", "系统管理员组");
         builder.setExpiration(expireAccess);
         String accessToken = builder.compact();
         System.out.println(accessToken);
@@ -170,5 +186,17 @@ public class TestActiviti {
                 System.out.println("flowelement id:" + e.getId() + "  name:" + e.getName() + "   class:" + e.getClass().toString());
             }
         }
+    }
+
+
+    //测试当前流程节点
+    @Test
+    public void testCurrentNodeId() {
+        runtimeService.createExecutionQuery().processInstanceId("c3ef0186-6e49-11ea-a49e-7085c2cd4cb8");
+        HistoricActivityInstance abc = historyService.createHistoricActivityInstanceQuery().processInstanceId("b137b194-6e44-11ea-9468-7085c2cd4cb8").singleResult();
+        historyService.createHistoricDetailQuery().processInstanceId("b137b194-6e44-11ea-9468-7085c2cd4cb8").singleResult();
+        historyService.createHistoricActivityInstanceQuery().processDefinitionId("superapi").list();
+        System.out.println("123");
+
     }
 }

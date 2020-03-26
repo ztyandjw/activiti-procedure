@@ -92,18 +92,22 @@ public class ProcedureController {
     @ApiOperation(value = "获取流程实例集合")
     public CommonResult<FetchProceduresVO> fetchAllProcedures(@Validated FetchProceduresBO fetchProceduresBO) {
         String definitionKey = fetchProceduresBO.getDefinitionKey();
-        String startUserId = fetchProceduresBO.getStartUserId();
-        String order = fetchProceduresBO.getOrder();
+        String procedureId = fetchProceduresBO.getProcedureId();
+        String bussinessKey = fetchProceduresBO.getBussinessKey();
+        Integer pageNum = fetchProceduresBO.getPageNum();
+        Integer totalCount = fetchProceduresBO.getTotalCount();
         String taskName = fetchProceduresBO.getTaskName();
         String userId = fetchProceduresBO.getUserId();
         String groupId = fetchProceduresBO.getGroupId();
         if(StringUtils.isNotBlank(taskName) && StringUtils.isBlank(userId)) {
             throw new ActivitiServiceException(400,  "taskName非空,userId不能为空");
         }
-        List<ProceduresDTO> list = procedureService.fetchProcedures(definitionKey, startUserId, order, taskName, userId, groupId);
+        List<ProceduresDTO> allList = procedureService.fetchAllProcedures(definitionKey, bussinessKey, procedureId, taskName, userId, groupId, pageNum);
+        int allSize = allList.size();
         FetchProceduresVO fetchProceduresVO = new FetchProceduresVO();
-        fetchProceduresVO.setList(list);
-        fetchProceduresVO.setNum(list.size());
+        List<ProceduresDTO> pagingList = procedureService.fetchPagingProcedures(pageNum, allList);
+        fetchProceduresVO.setList(pagingList);
+        fetchProceduresVO.setNum(allSize);
         return CommonResult.success(fetchProceduresVO);
     }
 

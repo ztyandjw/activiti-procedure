@@ -38,9 +38,10 @@ public class TaskController {
         String taskName = completeUserTaskBO.getTaskName();
         String definitionKey = completeUserTaskBO.getDefinitionKey();
         final Map<String, Object> inputParams = completeUserTaskBO.getInputParams();
-        String userid = completeUserTaskBO.getUserId();
-        String groupid = completeUserTaskBO.getGroupId();
-        userTaskService.completeUserTask(userid, groupid,  inputParams, taskName, procedureId, definitionKey);
+        String jwtToken = completeUserTaskBO.getToken();
+        String userId = JwtTokenHelper.getUserId(jwtTokenHelper.decode(jwtToken));
+        String groupId = JwtTokenHelper.getGroupId(jwtTokenHelper.decode(jwtToken));
+        userTaskService.completeUserTask(userId, groupId,  inputParams, taskName, procedureId, definitionKey);
         return CommonResult.success(null);
     }
 

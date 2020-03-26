@@ -17,20 +17,15 @@
         <springfox-swagger.version>2.9.2</springfox-swagger.version>
         <swagger-bootstrap-ui.version>1.9.3</swagger-bootstrap-ui.version>
         <activiti-dependencies.version>7.1.0.M6</activiti-dependencies.version>
-        <spring.boot.version>2.1.5.RELEASE</spring.boot.version>
+        <spring.boot.version>2.2.5.RELEASE</spring.boot.version>
 
     </properties>
 
 
     <dependencyManagement>
+
+
         <dependencies>
-            <dependency>
-                <groupId>org.activiti.dependencies</groupId>
-                <artifactId>activiti-dependencies</artifactId>
-                <version>${activiti-dependencies.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
 
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -39,6 +34,18 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <dependency>
+                <groupId>org.activiti.dependencies</groupId>
+                <artifactId>activiti-dependencies</artifactId>
+                <version>${activiti-dependencies.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+
+
+
+
         </dependencies>
 
 
@@ -46,10 +53,14 @@
 
 
     <dependencies>
-        <!--<dependency>-->
-            <!--<groupId>mysql</groupId>-->
-            <!--<artifactId>mysql-connector-java</artifactId>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <!--<version>5.1.48</version>-->
+            <version>5.1.48</version>
+            <!--<version>8.0.19</version>-->
+        </dependency>
+
 
         <dependency>
             <groupId>com.ctrip.framework.apollo</groupId>
@@ -96,24 +107,18 @@
         </dependency>
 
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <!--<version>5.1.27</version>-->
-            <version>8.0.19</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.zaxxer</groupId>
-                    <artifactId>HikariCP</artifactId>
-                </exclusion>
-            </exclusions>
+            <!--<exclusions>-->
+                <!--<exclusion>-->
+                    <!--<groupId>com.zaxxer</groupId>-->
+                    <!--<artifactId>HikariCP</artifactId>-->
+                <!--</exclusion>-->
+            <!--</exclusions>-->
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -130,11 +135,11 @@
             <artifactId>spring-security-jwt</artifactId>
             <version>1.0.10.RELEASE</version>
         </dependency>
-        <dependency>
-        <groupId>com.zaxxer</groupId>
-        <artifactId>HikariCP</artifactId>
-        <version>3.4.2</version>
-    </dependency>
+        <!--<dependency>-->
+        <!--<groupId>com.zaxxer</groupId>-->
+        <!--<artifactId>HikariCP</artifactId>-->
+        <!--<version>3.4.2</version>-->
+    <!--</dependency>-->
         <dependency>
             <groupId>org.activiti</groupId>
             <artifactId>activiti-spring-boot-starter</artifactId>

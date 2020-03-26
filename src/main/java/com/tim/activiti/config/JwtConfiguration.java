@@ -13,7 +13,8 @@ import org.springframework.context.annotation.Configuration;
 public class JwtConfiguration {
 
 
-    private static final String key = "IGZFZIGkYcWbSDBklck56AT5MmP5hyun";
+    @Value("${jwtKeyCloud51:jwtKeyCloud51}")
+    private String key;
 
     @Bean
     public JwtTokenHelper jwtTokenHelper(){

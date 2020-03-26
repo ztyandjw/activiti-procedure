@@ -66,8 +66,4 @@ public class ActivitiUtils {
         }
     }
 
-    public static void main(String[] args) {
-        List<String> a = new ArrayList();
-        System.out.println(a.contains(null));
-    }
 }

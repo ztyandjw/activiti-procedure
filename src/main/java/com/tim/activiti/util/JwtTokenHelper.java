@@ -22,7 +22,7 @@ public class JwtTokenHelper extends JwtAccessTokenConverter {
             throw new ActivitiServiceException(400, "token中不含有groupId字段");
         }
 
-        String groupId = (String)jwtToken.get("groupId");
+        String groupId = (String)jwtToken.get("groupName");
 //        if(StringUtils.isBlank(groupId)) {
 //            throw new ActivitiServiceException(400, "token中groupId字段为空");
 //        }
