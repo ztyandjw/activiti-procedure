@@ -5,6 +5,7 @@ import com.tim.activiti.service.activiti.ActivitiService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executor;
@@ -45,7 +46,6 @@ public class JwtTokenHelper extends JwtAccessTokenConverter {
     }
 
     public static void authenticationGroup(String authGroupName, Map<String, Object> jwtToken) {
-        Executors.newSingleThreadExecutor()
         String groupId = getGroupId(jwtToken);
         if(!StringUtils.equals(authGroupName, groupId)) {
             throw new ActivitiServiceException(401, "没有权限执行");

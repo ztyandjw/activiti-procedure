@@ -40,7 +40,7 @@ public class ProcedureServiceImpl {
     private TaskService taskService;
 
 
-    @Value("${pageSize:5}")
+    @Value("${pageSize:25}")
     private Integer pageSize;
 
     private Task valid(String definitionKey, String bussinessKey) {
@@ -122,6 +122,7 @@ public class ProcedureServiceImpl {
         ProceduresDTO proceduresDTO = new ProceduresDTO();
         proceduresDTO.wrap(varInstanceList, historicProcessInstance);
         proceduresDTO.setTaskAssignee(taskAssignee);
+
         proceduresDTO.setTaskName(taskName);
         List<HistoricActivityInstance> list = historyService.createHistoricActivityInstanceQuery().processInstanceId(historicProcessInstance.getId()).orderByHistoricActivityInstanceStartTime().asc().list();
         //存在结束节点
@@ -140,14 +141,14 @@ public class ProcedureServiceImpl {
         return proceduresDTO;
     }
 
-    private  void  fillProcedureDTOs(List<HistoricProcessInstance> historicProcessInstances, String taskName) {
-        List<ProceduresDTO> procedures = Lists.newArrayList();
-        for(HistoricProcessInstance historicProcessInstance: historicProcessInstances) {
-            //若为null, 说明任务没有被执行完成也没有马上要被执行
-            HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(historicProcessInstance.getId()).taskName(taskName).singleResult();
-            procedures.add(getPorcedureDTO(historicTaskInstance.getAssignee(), taskName, historicProcessInstance));
-        }
-    }
+//    private  void  fillProcedureDTOs(List<HistoricProcessInstance> historicProcessInstances, String taskName) {
+//        List<ProceduresDTO> procedures = Lists.newArrayList();
+//        for(HistoricProcessInstance historicProcessInstance: historicProcessInstances) {
+//            //若为null, 说明任务没有被执行完成也没有马上要被执行
+//            HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(historicProcessInstance.getId()).taskName(taskName).singleResult();
+//            procedures.add(getPorcedureDTO(historicTaskInstance.getAssignee(), taskName, historicProcessInstance));
+//        }
+//    }
 
 
 
@@ -193,20 +194,27 @@ public class ProcedureServiceImpl {
         if(pageNum == null) {
             pageNum =1;
         }
+        //总共的数量
         int totalSize = proceduresDTOS.size();
+        //有多少页
         int pageCount;
         if(totalSize % pageSize == 0) {
             pageCount = totalSize/pageSize;
         }
+//        else if(totalSize == 0) {
+//
+//        }
         else {
             pageCount = totalSize/pageSize + 1;
         }
+        //假设pageNum设置非常大，比实际的页数多
         if(pageNum > pageCount) {
-            pageNum = pageCount;
+            pageNum = 1;
         }
         int endIndex;
-        //不是最后页
+
         int frontIndex = (pageNum -1)* pageSize;
+        //不是最后页
         if(pageNum != pageCount) {
             endIndex = frontIndex + pageSize;
         }
@@ -227,7 +235,13 @@ public class ProcedureServiceImpl {
             historicProcessInstances = getHistoricProcessInstancesByTaskStatus(historicProcessInstances, definitionKey, taskName, taskUserId, taskGroupId);
             for(HistoricProcessInstance historicProcessInstance: historicProcessInstances) {
                 HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(historicProcessInstance.getId()).taskName(taskName).singleResult();
-                procedures.add(getPorcedureDTO(historicTaskInstance.getName(), historicTaskInstance.getAssignee(), historicProcessInstance));
+                if(historicTaskInstance.getEndTime() == null) {
+                    procedures.add(getPorcedureDTO(historicTaskInstance.getName(), null, historicProcessInstance));
+                }
+                else {
+                    procedures.add(getPorcedureDTO(historicTaskInstance.getName(), historicTaskInstance.getAssignee(), historicProcessInstance));
+
+                }
             }
             return procedures;
         }

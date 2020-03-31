@@ -95,7 +95,6 @@ public class ProcedureController {
         String procedureId = fetchProceduresBO.getProcedureId();
         String bussinessKey = fetchProceduresBO.getBussinessKey();
         Integer pageNum = fetchProceduresBO.getPageNum();
-        Integer totalCount = fetchProceduresBO.getTotalCount();
         String taskName = fetchProceduresBO.getTaskName();
         String userId = fetchProceduresBO.getUserId();
         String groupId = fetchProceduresBO.getGroupId();
